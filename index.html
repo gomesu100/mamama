@@ -530,7 +530,7 @@ function yearPage(y){
     const rawOut = (h.jra_out && h.jra_out !== '-') ? h.jra_out : (h.nar_out && h.nar_out !== '-' ? h.nar_out : '');
     if(rawOut){
       const out = rawOut.replace(/[.\-]/g, '/');
-      if(out.slice(0, 4) === y) ev.push({date: out.length >= 10 ? out : y + '/01/01', icon: '🌈', html: `${linkHorse(h)} 登録抹消`});
+      if(out.slice(0, 4) === y) ev.push({date: out.length >= 10 ? out : y + '/01/01', icon: '🩷', html: `${linkHorse(h)} 登録抹消`});
     }
   });
   const byRid = {};
