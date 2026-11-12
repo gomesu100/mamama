@@ -118,6 +118,15 @@ ul.xlist li{padding:4px 2px;border-bottom:1px dashed #f3d9e2}
 .pedwrap{overflow-x:auto}
 .faceL{width:64px;height:64px;object-fit:cover;border-radius:50%;border:2.5px solid var(--line);vertical-align:-18px;margin-right:10px;background:#fff}
 .faceS{width:26px;height:26px;object-fit:cover;border-radius:50%;border:1.5px solid var(--line);vertical-align:-7px;margin-right:5px;background:#fff}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px}
+.calday{border:1.5px solid var(--line);border-radius:10px;padding:5px 6px;min-height:58px;background:#fff}
+.calday.sp1{border-color:var(--pink);background:#fff5f7}
+.calday.sp2{border-color:#e8b64c;background:#fffaf0}
+.cald{font-weight:800;font-size:13px;color:#c2577a}
+.caltag{font-size:9px;color:#c2577a;font-weight:700}
+.calh{font-size:10.5px;line-height:1.35;margin-top:2px}
+.calh span{color:#999;font-size:9px}
+@media(max-width:640px){.cal{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:640px){table.infobox{float:none;width:100%;margin:0 0 12px 0}}
 </style>
 </head>
@@ -467,14 +476,20 @@ function titlePage(key){
 function calendarPage(){
   const byMonth = {};
   HORSES.forEach(h=>{ if(!h.birth) return; const m = parseInt(h.birth.slice(5,7), 10); (byMonth[m] = byMonth[m] || []).push(h); });
+  const DAYS = {1:31, 2:29, 3:31, 4:30, 5:31, 6:30, 7:31, 8:31, 9:30, 10:31, 11:30, 12:31};
   let html = `<h1>お誕生日カレンダー</h1><p class="small">収録馬全頭の誕生日。1月8日は寺田千代乃氏の誕生日、1月23日（0123）はアートの日。</p>`;
   for(let m = 1; m <= 12; m++){
-    const lst = (byMonth[m] || []).slice().sort((a, b) => a.birth.slice(8).localeCompare(b.birth.slice(8)) || a.birth.localeCompare(b.birth));
-    html += `<h2>${m}月（${lst.length}頭）</h2><ul class="hlist">` + lst.map(h => {
-      const d = parseInt(h.birth.slice(8, 10), 10);
-      const marks = (m === 1 && d === 8) ? ' 🎂千代乃氏と同じ誕生日' : (m === 1 && d === 23) ? ' 📦アートの日生まれ' : (m === 2 && d === 29) ? ' （うるう日生まれ）' : '';
-      return `<li><span class="small">${d}日</span> ${linkHorse(h)} <span class="small">${esc(h.birth_year)}年生${marks}</span></li>`;
-    }).join('') + `</ul>`;
+    const inMonth = byMonth[m] || [];
+    const byDay = {};
+    inMonth.forEach(h => { const d = parseInt(h.birth.slice(8, 10), 10); (byDay[d] = byDay[d] || []).push(h); });
+    html += `<h2>${m}月（${inMonth.length}頭）</h2><div class="cal">`;
+    for(let d = 1; d <= DAYS[m]; d++){
+      const lst = (byDay[d] || []).slice().sort((a, b) => a.birth.localeCompare(b.birth));
+      const special = (m === 1 && d === 8) ? ' sp1' : (m === 1 && d === 23) ? ' sp2' : '';
+      const tag = (m === 1 && d === 8) ? '<div class="caltag">🎂 千代乃氏の誕生日</div>' : (m === 1 && d === 23) ? '<div class="caltag">📦 アートの日</div>' : (m === 2 && d === 29) ? '<div class="caltag">うるう日</div>' : '';
+      html += `<div class="calday${special}"><div class="cald">${d}</div>${tag}${lst.map(h => `<div class="calh"><a href="#/horse/${h.id}">${esc(h.name)}</a> <span>${esc(h.birth_year)}年生</span></div>`).join('')}</div>`;
+    }
+    html += `</div>`;
   }
   app.innerHTML = html;
 }
