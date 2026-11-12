@@ -477,8 +477,8 @@ function calendarPage(){
   const byMonth = {};
   HORSES.forEach(h=>{ if(!h.birth) return; const m = parseInt(h.birth.slice(5,7), 10); (byMonth[m] = byMonth[m] || []).push(h); });
   const DAYS = {1:31, 2:29, 3:31, 4:30, 5:31, 6:30, 7:31, 8:31, 9:30, 10:31, 11:30, 12:31};
-  let html = `<h1>お誕生日カレンダー</h1><p class="small">収録馬全頭の誕生日。1月8日は寺田千代乃氏の誕生日、1月23日（0123）はアートの日。</p>`;
-  for(let m = 1; m <= 12; m++){
+  let html = `<h1>お誕生日カレンダー</h1><p class="small">収録馬全頭の誕生日。全頭1〜5月生まれで、6〜12月生まれは0頭。1月8日は寺田千代乃氏の誕生日、1月23日（0123）はアートの日。</p>`;
+  for(let m = 1; m <= 5; m++){
     const inMonth = byMonth[m] || [];
     const byDay = {};
     inMonth.forEach(h => { const d = parseInt(h.birth.slice(8, 10), 10); (byDay[d] = byDay[d] || []).push(h); });
