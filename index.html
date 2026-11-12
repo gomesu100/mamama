@@ -225,8 +225,6 @@ function horsePage(id){
   </div>
   <h2>馬名由来</h2><p>${esc(dash(h.origin))}</p>
   ${(h.career_disp && (h.career_disp.includes('→') || h.career_disp.includes('（馬主'))) ? `<h2>経歴</h2><p>${esc(h.career_disp)}</p>` : ''}
-  <h2>関連記事</h2>
-  ${(h.scraps && h.scraps.length) ? h.scraps.map(s=>`<div class="scrap"><div class="src">${esc(s.date||'')} ・ ${esc(s.source||'')}</div><p>${s.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||'記事を読む')}</a>`:`<b>${esc(s.title||'')}</b>`}</p>${s.note?`<p class="small">${esc(s.note)}</p>`:''}</div>`).join('') : '<p class="small">まだ記事が登録されていません。新聞・競馬メディア・関係者の発信から見つけ次第、ここに追加されます。</p>'}
   ${sibs.length?`<h2>兄弟馬（母：${esc(damName(h.dam))}）</h2><ul class="hlist">${sibs.map(s=>{const full = s.sire===h.sire && h.sire; const rel = !full ? '' : (s.birth_year<h.birth_year ? (s.sex==='牝'?'全姉':'全兄') : s.birth_year>h.birth_year ? (s.sex==='牝'?'全妹':'全弟') : (s.sex==='牝'?'全姉妹':'全兄弟')); return `<li>${linkHorse(s)}${rel?` <span class="bdg full">${rel}</span>`:''} <span class="small">父${esc(s.sire)}・${esc(s.birth_year)}年生</span></li>`;}).join('')}</ul>`:''}
   ${kids.length?`<h2>産駒（千代乃氏所有馬）</h2><ul class="hlist">${kids.map(kidHtml).join('')}</ul>`:''}
   ${sireKids.length?`<h2>同じ父の所有馬</h2><p class="small">${sireKids.map(s=>linkHorse(s)).join('、')}</p>`:''}
@@ -234,7 +232,10 @@ function horsePage(id){
   <h2>戦績（${h.races.length}件）</h2>
   <div class="racewrap"><table class="races"><tr><th>日付</th><th>場所</th><th>R</th><th>レース名</th><th>グレード</th><th>コース</th><th>着順</th><th>騎手</th><th>賞金</th></tr>
   ${h.races.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.place)}</td><td>${esc(r.rnd)}</td><td>${r.full?`<a href="#/race/${encodeURIComponent(r.rid)}">${esc(r.race)}</a>`:esc(r.race)}${multiMap()[r.rid]?'<a class="togpill" href="#/together">同時出走</a>':''}</td><td>${esc(dash(r.grade))}</td><td>${esc(r.surface)}${esc(r.dist)}</td><td class="${r.fin==='1'?'win':''}">${esc(r.fin)}</td><td>${r.jockey?`<a href="#/jockey/${encodeURIComponent(r.jockey)}">${esc(r.jockey)}</a>`:''}</td><td>${esc(r.prize)}</td></tr>`).join('')}
-  </table></div>`;
+  </table></div>
+  <h2>関連記事</h2>
+  ${(h.scraps && h.scraps.length) ? h.scraps.map(s=>`<div class="scrap"><div class="src">${esc(s.date||'')} ・ ${esc(s.source||'')}</div><p>${s.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||'記事を読む')}</a>`:`<b>${esc(s.title||'')}</b>`}</p>${s.note?`<p class="small">${esc(s.note)}</p>`:''}</div>`).join('') : '<p class="small">まだ記事が登録されていません。新聞・競馬メディア・関係者の発信から見つけ次第、ここに追加されます。</p>'}
+  `;
 }
 
 function allPaths(L){
