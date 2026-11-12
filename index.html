@@ -17,6 +17,13 @@ header.site .title a{color:#a03a5c;text-decoration:none}
 nav.main{display:flex;gap:8px;margin-top:8px;font-size:13.5px;flex-wrap:wrap}
 nav.main a{color:#a03a5c;text-decoration:none;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:2px 12px;font-weight:600;transition:.15s}
 nav.main a:hover{background:var(--head);transform:translateY(-1px)}
+nav.main .hasdrop{position:relative;display:inline-block}
+nav.main .dropbtn{color:#a03a5c;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:2px 12px;font-weight:600;font-size:13.5px;font-family:inherit;cursor:pointer;transition:.15s}
+nav.main .dropbtn:hover{background:var(--head)}
+nav.main .drop{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1.5px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;min-width:160px;z-index:20;flex-direction:column;gap:2px}
+nav.main .hasdrop.open .drop{display:flex}
+nav.main .drop a{border:none;border-radius:8px;padding:5px 10px;white-space:nowrap}
+nav.main .drop a:hover{transform:none}
 main{max-width:960px;margin:0 auto;padding:20px 16px 40px}
 h1{font-size:26px;font-weight:800;border-bottom:3px dotted var(--peach);padding-bottom:8px}
 .namesub{margin:2px 0 14px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;text-align:center}
@@ -134,7 +141,7 @@ ul.xlist li{padding:4px 2px;border-bottom:1px dashed #f3d9e2}
 <header class="site">
   <div class="title"><a href="#/">千代乃所有馬Wiki</a></div>
   <nav class="main">
-    <a href="#/">トップ</a><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a><a href="#/feed">近況</a><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a>
+    <a href="#/">トップ</a><span class="hasdrop"><button class="dropbtn" type="button">馬 ▾</button><span class="drop"><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">データ ▾</button><span class="drop"><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">読み物 ▾</button><span class="drop"><a href="#/feed">近況</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a></span></span>
   </nav>
 </header>
 <main id="app"></main>
@@ -563,6 +570,9 @@ function route(){
   else home();
 }
 window.addEventListener('hashchange', route);
+document.querySelectorAll('.dropbtn').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); const p=b.parentElement; const was=p.classList.contains('open'); document.querySelectorAll('.hasdrop.open').forEach(x=>x.classList.remove('open')); if(!was) p.classList.add('open'); }));
+document.addEventListener('click',()=>document.querySelectorAll('.hasdrop.open').forEach(x=>x.classList.remove('open')));
+window.addEventListener('hashchange',()=>document.querySelectorAll('.hasdrop.open').forEach(x=>x.classList.remove('open')));
 route();
 </script>
 </body>
