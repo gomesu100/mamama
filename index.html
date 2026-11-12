@@ -52,6 +52,7 @@ table.races tr:nth-child(even) td{background:#fff8fa}
 .card::before{content:"★";position:absolute;top:5px;right:9px;font-size:11px;color:var(--peach);opacity:.75;transform:rotate(15deg)}
 .card .n{font-size:24px;font-weight:800;color:#c2436f}
 .card .l{font-size:12.5px;color:var(--sub)}
+.card .sub{font-size:11px;color:var(--sub);margin-top:4px;line-height:1.55}
 .nowbox{border:2px solid var(--peach);background:linear-gradient(135deg,#fff5f7,#fff);border-radius:12px;padding:10px 14px;margin:12px 0;box-shadow:var(--shadow)}
 .nowbox .t{font-weight:800;color:#a03a5c;margin-bottom:2px}
 .nowbox .t::before{content:"★ ";color:#e77fa2}
@@ -141,6 +142,10 @@ function home(){
   const total = HORSES.length;
   const starts = HORSES.reduce((a,h)=>a+h.starts,0);
   const wins = HORSES.reduce((a,h)=>a+h.wins,0);
+  const JRAV = ['札幌','函館','福島','新潟','東京','中山','中京','京都','阪神','小倉'];
+  const jraWins = HORSES.reduce((a,h)=>a+h.races.filter(r=>r.fin==='1'&&JRAV.includes(r.place)).length,0);
+  const narWins = wins - jraWins;
+  const otherOwnerWins = 46; // 他馬主時代の勝利は全て地方分（経歴データから2026-11-12に検証）
   const graded = HORSES.filter(h=>h.graded_wins.length);
   const active = HORSES.filter(h=>h.active);
   const years = [...new Set(HORSES.map(h=>h.birth_year).filter(Boolean))].sort();
@@ -152,7 +157,7 @@ function home(){
   <div class="cards">
     <div class="card"><div class="n">${total}</div><div class="l">収録頭数</div></div>
     <div class="card"><div class="n">${starts}</div><div class="l">総出走数（収録分）</div></div>
-    <div class="card"><div class="n">${wins}</div><div class="l">総勝利数</div></div>
+    <div class="card"><div class="n">${wins}</div><div class="l">総勝利数</div><div class="sub">中央${jraWins}・地方${narWins}<br>うち千代乃氏所有時 ${wins-otherOwnerWins}勝（中央${jraWins}・地方${narWins-otherOwnerWins}）</div></div>
     <div class="card"><div class="n">${graded.length}</div><div class="l">重賞勝ち馬</div></div>
     <div class="card"><div class="n">${active.length}</div><div class="l">現役馬</div></div>
     <div class="card"><div class="n">${dy}年</div><div class="l">馬主登録（1994年）から</div></div>
