@@ -48,6 +48,8 @@ table.races tr:nth-child(even) td{background:#fff8fa}
 .nowbox{border:2px solid var(--peach);background:linear-gradient(135deg,#fff5f7,#fff);border-radius:12px;padding:10px 14px;margin:12px 0;box-shadow:var(--shadow)}
 .nowbox .t{font-weight:800;color:#a03a5c;margin-bottom:2px}
 .nowbox .t::before{content:"★ ";color:#e77fa2}
+.todaybox{border:2px solid #ecc65d;background:linear-gradient(135deg,#fff8e1,#fff);border-radius:12px;padding:10px 14px;margin:12px 0;box-shadow:var(--shadow)}
+.todaybox .t{font-weight:800;color:#96700a;margin-bottom:2px}
 .gbox{border:2px solid #eec95c;background:linear-gradient(135deg,#fff9e0,#fdeef2);border-radius:12px;padding:12px 16px;margin:12px 0;box-shadow:var(--shadow)}
 .gbox .t{font-weight:800;font-size:16px;color:#8a6d00}
 .gbox ul{margin:6px 0 2px;padding-left:18px}
@@ -112,7 +114,7 @@ ul.xlist li{padding:4px 2px;border-bottom:1px dashed #f3d9e2}
 <header class="site">
   <div class="title"><a href="#/">千代乃所有馬Wiki</a></div>
   <nav class="main">
-    <a href="#/">トップ</a><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a><a href="#/feed">近況</a><a href="#/jockeys">騎手</a><a href="#/together">同時出走</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a>
+    <a href="#/">トップ</a><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a><a href="#/feed">近況</a><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a>
   </nav>
 </header>
 <main id="app"></main>
@@ -148,6 +150,7 @@ function home(){
     <div class="card"><div class="n">${active.length}</div><div class="l">現役馬</div></div>
     <div class="card"><div class="n">${dy}年</div><div class="l">馬主登録（1994年）から</div></div>
   </div>
+  ${todayBox()}
   ${(()=>{ const feed = HORSES.flatMap(h=>(h.updates||[]).filter(u=>u.date).map(u=>({h, u}))).sort((a,b)=>(b.u.date||'').localeCompare(a.u.date||'')).slice(0,10); return feed.length?`<h2>最近の動き</h2><ul class="hlist">${feed.map(({h,u})=>`<li><span class="small">${esc(u.date||'')}</span> ${linkHorse(h)} <span class="small">${esc(u.text||'')}</span></li>`).join('')}</ul><p class="small"><a href="#/feed">近況をすべて見る</a></p>`:''; })()}
   <h2>重賞勝ち馬</h2><ul class="hlist">${graded.map(h=>`<li>${linkHorse(h)} <span class="small">${esc(h.graded_wins.join('、'))}</span></li>`).join('')}</ul>
   <h2>現役馬</h2><ul class="hlist">${active.map(h=>`<li>${linkHorse(h)} <span class="small">${esc(h.birth_year)}年生・${esc(h.stable)}・父${esc(h.sire)}</span></li>`).join('')}</ul>
@@ -229,6 +232,7 @@ function horsePage(id){
   ${kids.length?`<h2>産駒（千代乃氏所有馬）</h2><ul class="hlist">${kids.map(kidHtml).join('')}</ul>`:''}
   ${sireKids.length?`<h2>同じ父の所有馬</h2><p class="small">${sireKids.map(s=>linkHorse(s)).join('、')}</p>`:''}
   ${pedSection(h)}
+  ${(()=>{ const rivals = Object.entries(EXTRA.opp).map(([name, meets])=>{ const ms = meets.filter(m=>m.horse_id===h.id); if(ms.length<2) return null; let a=0,b=0; ms.forEach(m=>{ const x=parseInt(m.own_fin), y=parseInt(m.opp_fin); if(!isNaN(x)&&!isNaN(y)){ if(x<y) a++; else if(x>y) b++; } }); return {name, n: ms.length, a, b}; }).filter(Boolean).sort((x,y)=>y.n-x.n || x.name.localeCompare(y.name,'ja')).slice(0,5); return rivals.length?`<h2>よく対戦した馬</h2><ul class="hlist">${rivals.map(r=>`<li><a href="#/opp/${encodeURIComponent(r.name)}">${esc(r.name)}</a> <span class="small">対戦${r.n}回（${esc(h.name)}の先着${r.a}回／後着${r.b}回）</span></li>`).join('')}</ul>`:''; })()}
   <h2>戦績（${h.races.length}件）</h2>
   <div class="racewrap"><table class="races"><tr><th>日付</th><th>場所</th><th>R</th><th>レース名</th><th>グレード</th><th>コース</th><th>着順</th><th>騎手</th><th>賞金</th></tr>
   ${h.races.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.place)}</td><td>${esc(r.rnd)}</td><td>${r.full?`<a href="#/race/${encodeURIComponent(r.rid)}">${esc(r.race)}</a>`:esc(r.race)}${multiMap()[r.rid]?'<a class="togpill" href="#/together">同時出走</a>':''}</td><td>${esc(dash(r.grade))}</td><td>${esc(r.surface)}${esc(r.dist)}</td><td class="${r.fin==='1'?'win':''}">${esc(r.fin)}</td><td>${r.jockey?`<a href="#/jockey/${encodeURIComponent(r.jockey)}">${esc(r.jockey)}</a>`:''}</td><td>${esc(r.prize)}</td></tr>`).join('')}
@@ -301,6 +305,7 @@ function oppPage(name){
   const names = Object.keys(byHorse);
   app.innerHTML = `<div class="silkband"><div class="t">★ ${esc(name)} ★</div><div class="s">対戦馬ページ</div></div>
   <p>寺田千代乃氏所有馬との対戦：<b>${names.length}頭</b>と計<b>${meets.length}回</b>対戦（収録済みレース分）。</p>
+  ${(()=>{ let a=0,b=0; meets.forEach(m=>{ const x=parseInt(m.own_fin), y=parseInt(m.opp_fin); if(!isNaN(x)&&!isNaN(y)){ if(x<y) a++; else if(x>y) b++; } }); return (a||b)?`<p>所有馬が先着したのは<b>${a}回</b>、後着は<b>${b}回</b>です。</p>`:''; })()}
   ${names.map(hn=>{ const ms = byHorse[hn].sort((a,b)=>a.date<b.date?-1:1); const hid = ms[0].horse_id;
     return `<h2><a href="#/horse/${hid}">${esc(hn)}</a>（${ms.length}回対戦）</h2><ul class="hlist">${ms.map(m=>`<li><a href="#/race/${encodeURIComponent(m.race_id)}">${esc(m.race)}</a> <span class="small">${esc(m.date)} ${esc(m.place)}（${esc(dash(m.grade))}）… ${esc(hn)} ${esc(m.own_fin)}着 ／ ${esc(name)} ${esc(m.opp_fin)}着</span></li>`).join('')}</ul>`; }).join('')}
   <p class="small">※同名の別馬が混ざる場合があります。年代とレースで見分けてください。</p>`;
@@ -388,6 +393,51 @@ function togetherPage(){
   <div class="toglist">${arr.slice().sort((a,b)=> (parseInt(a.r.fin)||99)-(parseInt(b.r.fin)||99)).map(x=>`<div>${x.r.num?`<span class="unum w${esc(x.r.frame||'1')}">${esc(x.r.num)}</span>`:''}<span class="${x.r.fin==='1'?'winstar':'star'}">★</span>${linkHorse(x.h)} <span class="small">${esc(x.r.fin)}着</span></div>`).join('')}</div>`).join('')}`;
 }
 
+const GRADED_SET = ['G1','GI','G2','GII','G3','GIII','Jpn1','JpnI','Jpn2','JpnII','Jpn3','JpnIII'];
+function mdOf(dstr){ const p = String(dstr||'').replace(/\//g,'-').split('-'); return p.length>=3 ? p[1]+'-'+p[2] : ''; }
+function todayBox(){
+  const now = new Date();
+  const Y = now.getFullYear();
+  const md = String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  const leap = (Y%4===0 && Y%100!==0) || Y%400===0;
+  const isToday = (dstr)=>{ const m = mdOf(dstr); if(m===md) return true; if(m==='02-29' && md==='02-28' && !leap) return true; return false; };
+  const items = [];
+  HORSES.filter(h=>isToday(h.birth)).forEach(h=> items.push(`🎂 ${linkHorse(h)} の誕生日（${Y - parseInt(h.birth_year)}歳）`));
+  HORSES.forEach(h=>{ (h.races||[]).forEach((r,i)=>{ if(!isToday(r.date)) return; const yr = parseInt(r.date.slice(0,4)); if(r.fin==='1'){ if(GRADED_SET.includes(r.grade)) items.push(`🏆 ${yr}年の今日、${linkHorse(h)} が ${esc(r.place)}・${esc(r.race)}（${esc(r.grade)}）を勝ちました`); else items.push(`🥇 ${yr}年の今日、${linkHorse(h)} が ${esc(r.place)}・${esc(r.race)} を勝ちました`); } if(i===0) items.push(`🐴 ${yr}年の今日、${linkHorse(h)} が ${esc(r.place)}・${esc(r.race)} でデビューしました（${esc(r.fin)}着）`); }); });
+  const today0 = new Date(Y, now.getMonth(), now.getDate());
+  const aheadDays = (mmdd)=>{ const [m,d] = mmdd.split('-').map(Number); let dt = new Date(Y, m-1, d); if(dt <= today0) dt = new Date(Y+1, m-1, d); return Math.round((dt - today0)/86400000); };
+  let nextB = null, nextG = null;
+  HORSES.forEach(h=>{ const m = mdOf(h.birth); if(m){ const dd = aheadDays(m); if(!nextB || dd < nextB.dd) nextB = {h, m, dd}; } (h.races||[]).forEach(r=>{ if(r.fin==='1' && GRADED_SET.includes(r.grade)){ const m2 = mdOf(r.date); const dd2 = aheadDays(m2); if(!nextG || dd2 < nextG.dd) nextG = {h, r, m: m2, dd: dd2}; } }); });
+  const fmt = (mmdd)=> mmdd.replace('-','月')+'日';
+  const up = [];
+  if(nextB) up.push(`次の誕生日は ${fmt(nextB.m)} の ${linkHorse(nextB.h)}`);
+  if(nextG) up.push(`次の重賞勝ち記念日は ${fmt(nextG.m)}（${linkHorse(nextG.h)} の${esc(nextG.r.race)}）`);
+  return `<div class="todaybox"><div class="t">🎂 今日の出来事（${Y}年${now.getMonth()+1}月${now.getDate()}日）</div>${items.length ? items.map(t=>`<div>・${t}</div>`).join('') : '<div>今日は誕生日や記念日の該当がありません。</div>'}${up.length?`<div class="small" style="margin-top:4px">もうすぐ：${up.join(' ／ ')}</div>`:''}</div>`;
+}
+
+function rivalRows(){
+  return Object.entries(EXTRA.opp).map(([name, meets])=>{
+    const nh = new Set(meets.map(m=>m.horse_id)).size;
+    let ahead = 0, behind = 0;
+    meets.forEach(m=>{ const a = parseInt(m.own_fin), b = parseInt(m.opp_fin); if(!isNaN(a) && !isNaN(b)){ if(a<b) ahead++; else if(a>b) behind++; } });
+    return {name, n: meets.length, nh, ahead, behind};
+  }).sort((x,y)=> y.n - x.n || y.nh - x.nh || x.name.localeCompare(y.name,'ja'));
+}
+function rivalsPage(){
+  const rows = rivalRows();
+  app.innerHTML = `<h1>対戦馬（全${rows.length.toLocaleString()}頭）</h1>
+  <p class="small">寺田千代乃氏所有馬と対戦した馬を、名前で検索できます。はじめは対戦回数の多い順に100頭を表示しています。先着・後着は所有馬から見た回数です。</p>
+  <input class="search" id="q" placeholder="対戦馬の名前で検索">
+  <div id="list"></div>`;
+  const draw = (q)=>{
+    const matched = q ? rows.filter(r=>r.name.includes(q)) : rows;
+    const list = matched.slice(0, q ? 200 : 100);
+    document.getElementById('list').innerHTML = `<ul class="hlist">${list.map(r=>`<li><a href="#/opp/${encodeURIComponent(r.name)}">${esc(r.name)}</a> <span class="small">対戦${r.n}回（所有馬${r.nh}頭と対戦）・所有馬の先着${r.ahead}回／後着${r.behind}回</span></li>`).join('')}</ul>` + (matched.length > list.length ? `<p class="small">※${matched.length}頭中 ${list.length}頭まで表示しています。名前をもう少し絞ってください。</p>` : '');
+  };
+  draw('');
+  document.getElementById('q').addEventListener('input', e=>draw(e.target.value));
+}
+
 function route(){
   const hash = location.hash || '#/';
   const parts = hash.replace(/^#\//,'').split('/');
@@ -403,6 +453,7 @@ function route(){
   else if(page==='active') activePage();
   else if(page==='graded') listPage('重賞勝ち馬', h=>h.graded_wins.length, h=>`<li>${linkHorse(h)} <span class="small">${esc(h.graded_wins.join('、'))}</span></li>`);
   else if(page==='jockeys') jockeysPage();
+  else if(page==='rivals') rivalsPage();
   else if(page==='jockey') jockeyPage(decodeURIComponent(parts.slice(1).join('/')));
   else if(page==='together') togetherPage();
   else if(page==='families') familiesPage();
