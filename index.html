@@ -184,7 +184,7 @@ function home(){
   const jraWins = HORSES.reduce((a,h)=>a+h.races.filter(r=>r.fin==='1'&&JRAV.includes(r.place)).length,0);
   const narWins = wins - jraWins;
   const otherOwnerWins = 46; // 他馬主時代の勝利は全て地方分（経歴データから2026-11-12に検証）
-  const graded = HORSES.filter(h=>h.graded_wins.length);
+  const graded = HORSES.filter(h=>h.graded_wins.length).slice().sort((a,b)=> (b.birth||b.birth_year).localeCompare(a.birth||a.birth_year));
   const active = HORSES.filter(h=>h.active);
   const years = [...new Set(HORSES.map(h=>h.birth_year).filter(Boolean))].sort();
   let firstRace=null, firstHorse='';
@@ -498,7 +498,7 @@ function rivalsPage(){
 }
 
 function gradedPage(){
-  const list = HORSES.filter(h=>h.graded_wins.length).slice().sort((a,b)=> b.graded.length-a.graded.length || (a.graded[0].date<b.graded[0].date?-1:1));
+  const list = HORSES.filter(h=>h.graded_wins.length).slice().sort((a,b)=> (b.birth||b.birth_year).localeCompare(a.birth||a.birth_year));
   const total = list.reduce((a,h)=>a+h.graded.length,0);
   const maxn = Math.max(...list.map(h=>h.graded.length));
   const gpill = g => `<span class="gpill ${g==='GI'||g==='G1'?'gi':(g==='GII'||g==='G2')?'g2':g.startsWith('Jpn')?'jpn':''}">${esc(g)}</span>`;
