@@ -99,9 +99,10 @@ a.tag:hover{background:#fbd9e2}
 .search:focus{border-color:var(--peach)}
 .small{font-size:13px;color:var(--sub)}
 .win{font-weight:800;color:#d14e7e}
-.fin1{font-weight:800;color:#bf9000}
-.fin2{font-weight:800;color:#648cb4}
-.fin3{font-weight:800;color:#b87333}
+.fin1,.fin2,.fin3{display:inline-block;min-width:21px;text-align:center;border-radius:999px;padding:0 5px;font-weight:800;border:1.5px solid;line-height:1.55}
+.fin1{color:#a87f00;border-color:#e3b93c;background:#fdf3d0}
+.fin2{color:#4f7396;border-color:#a9c3da;background:#e8f0f7}
+.fin3{color:#9c5a24;border-color:#d69a63;background:#faeedd}
 .silkband{border:2px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 14px;background-color:#fff;background-image:radial-gradient(circle,#f4a7bd 1.9px,transparent 2px),radial-gradient(circle,#fbd9e2 1.3px,transparent 1.4px);background-size:34px 34px,22px 22px;background-position:0 0,9px 7px;box-shadow:var(--shadow)}
 .silkband .t{font-weight:800;color:#a03a5c;font-size:17px}
 .silkband .s{font-size:13px;color:var(--sub)}
@@ -297,7 +298,7 @@ function horsePage(id){
   ${(()=>{ const rivals = Object.entries(EXTRA.opp).map(([name, meets])=>{ const ms = meets.filter(m=>m.horse_id===h.id); if(ms.length<2) return null; let a=0,b=0; ms.forEach(m=>{ const x=parseInt(m.own_fin), y=parseInt(m.opp_fin); if(!isNaN(x)&&!isNaN(y)){ if(x<y) a++; else if(x>y) b++; } }); return {name, n: ms.length, a, b}; }).filter(Boolean).sort((x,y)=>y.n-x.n || x.name.localeCompare(y.name,'ja')).slice(0,5); return rivals.length?`<h2>よく対戦した馬</h2><ul class="hlist">${rivals.map(r=>`<li><a href="#/opp/${encodeURIComponent(r.name)}">${esc(r.name)}</a> <span class="small">対戦${r.n}回（${esc(h.name)}の先着${r.a}回／後着${r.b}回）</span></li>`).join('')}</ul>`:''; })()}
   <h2>戦績（${h.races.length}件）</h2>
   <div class="racewrap"><table class="races"><tr><th>日付</th><th>場所</th><th>R</th><th>レース名</th><th>グレード</th><th>コース</th><th>着順</th><th>騎手</th><th>賞金</th></tr>
-  ${h.races.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.place)}</td><td>${esc(r.rnd)}</td><td>${r.full?`<a href="#/race/${encodeURIComponent(r.rid)}">${esc(r.race)}</a>`:esc(r.race)}${multiMap()[r.rid]?'<a class="togpill" href="#/together">同時出走</a>':''}${(r.fam||[]).map(f=>`<a class="fampill ${f.k==='寿'?'toshio':'hideki'}" href="#/title/${encodeURIComponent(f.k==='寿'?'寿男氏馬と対戦':'秀樹氏馬と対戦')}" title="${f.k==='寿'?'寺田寿男氏':'寺田秀樹氏'}の${esc(f.opp)}と同レース${f.scr?'（相手は取消）':''}">${f.k}</a>`).join('')}${(EXTRA.videos||{})[r.rid]?`<a class="vidpill" href="${esc((EXTRA.videos||{})[r.rid])}" target="_blank" rel="noopener" title="レース映像を見る">🎥</a>`:''}</td><td>${esc(dash(r.grade))}</td><td>${esc(r.surface)}${esc(r.dist)}</td><td class="${finCls(r.fin)}">${esc(r.fin)}</td><td>${r.jockey?`<a href="#/jockey/${encodeURIComponent(r.jockey)}">${esc(r.jockey)}</a>`:''}</td><td>${esc(r.prize)}</td></tr>`).join('')}
+  ${h.races.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.place)}</td><td>${esc(r.rnd)}</td><td>${r.full?`<a href="#/race/${encodeURIComponent(r.rid)}">${esc(r.race)}</a>`:esc(r.race)}${multiMap()[r.rid]?'<a class="togpill" href="#/together">同時出走</a>':''}${(r.fam||[]).map(f=>`<a class="fampill ${f.k==='寿'?'toshio':'hideki'}" href="#/title/${encodeURIComponent(f.k==='寿'?'寿男氏馬と対戦':'秀樹氏馬と対戦')}" title="${f.k==='寿'?'寺田寿男氏':'寺田秀樹氏'}の${esc(f.opp)}と同レース${f.scr?'（相手は取消）':''}">${f.k}</a>`).join('')}${(EXTRA.videos||{})[r.rid]?`<a class="vidpill" href="${esc((EXTRA.videos||{})[r.rid])}" target="_blank" rel="noopener" title="レース映像を見る">🎥</a>`:''}</td><td>${esc(dash(r.grade))}</td><td>${esc(r.surface)}${esc(r.dist)}</td><td><span class="${finCls(r.fin)}">${esc(r.fin)}</span></td><td>${r.jockey?`<a href="#/jockey/${encodeURIComponent(r.jockey)}">${esc(r.jockey)}</a>`:''}</td><td>${esc(r.prize)}</td></tr>`).join('')}
   </table></div>
   <h2>関連記事</h2>
   ${(h.scraps && h.scraps.length) ? h.scraps.map(s=>`<div class="scrap"><div class="src">${esc(s.date||'')} ・ ${esc(s.source||'')}</div><p>${s.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||'記事を読む')}</a>`:`<b>${esc(s.title||'')}</b>`}</p>${s.note?`<p class="small">${esc(s.note)}</p>`:''}</div>`).join('') : '<p class="small">まだ記事が登録されていません。新聞・競馬メディア・関係者の発信から見つけ次第、ここに追加されます。</p>'}
@@ -356,7 +357,7 @@ function racePage(rid){
   if(!meta || !order){ app.innerHTML = '<p>このレースの全着順はまだ収録されていません。</p>'; return; }
   app.innerHTML = `<div class="silkband"><div class="t">★ ${esc(meta.place)}${esc(meta.rnd)}R ${esc(meta.race)} ★</div><div class="s">${esc(meta.date)} ・ ${esc(dash(meta.grade))} ・ ${esc(meta.surface)}${esc(meta.dist)}${(EXTRA.videos||{})[rid]?` ・ <a href="${esc((EXTRA.videos||{})[rid])}" target="_blank" rel="noopener">🎥 レース映像</a>`:''}</div></div>
   <div class="racewrap"><table class="races"><tr><th>着順</th><th>馬名</th><th>騎手</th></tr>
-  ${order.map(o=>{ const oid = EXTRA.idByName[o.name]; return `<tr${oid?' style="font-weight:800"':''}><td class="${finCls(o.fin)}">${esc(o.fin)}</td><td>${oid?`<a href="#/horse/${oid}">${esc(o.name)}</a>`:`<a href="#/opp/${encodeURIComponent(o.name)}">${esc(o.name)}</a>`}</td><td>${o.jockey?`<a href="#/jockey/${encodeURIComponent(o.jockey)}">${esc(o.jockey)}</a>`:''}</td></tr>`; }).join('')}
+  ${order.map(o=>{ const oid = EXTRA.idByName[o.name]; return `<tr${oid?' style="font-weight:800"':''}><td><span class="${finCls(o.fin)}">${esc(o.fin)}</span></td><td>${oid?`<a href="#/horse/${oid}">${esc(o.name)}</a>`:`<a href="#/opp/${encodeURIComponent(o.name)}">${esc(o.name)}</a>`}</td><td>${o.jockey?`<a href="#/jockey/${encodeURIComponent(o.jockey)}">${esc(o.jockey)}</a>`:''}</td></tr>`; }).join('')}
   </table></div>
   <p class="small">太字は寺田千代乃氏所有馬。対戦馬の名前からは、その馬が対戦した所有馬の一覧へ飛べます。</p>`;
 }
@@ -443,7 +444,7 @@ function jockeyPage(name){
   </table></div>
   <h2>騎乗レース</h2>
   <div class="racewrap"><table class="races"><tr><th>日付</th><th>馬名</th><th>レース名</th><th>着順</th></tr>
-  ${arr.slice().sort((a,b)=> a.r.date<b.r.date?1:-1).map(x=>`<tr><td>${esc(x.r.date)}</td><td>${linkHorse(x.h)}</td><td>${x.r.full?`<a href="#/race/${encodeURIComponent(x.r.rid)}">${esc(x.r.race)}</a>`:esc(x.r.race)}</td><td class="${finCls(x.r.fin)}">${esc(x.r.fin)}</td></tr>`).join('')}
+  ${arr.slice().sort((a,b)=> a.r.date<b.r.date?1:-1).map(x=>`<tr><td>${esc(x.r.date)}</td><td>${linkHorse(x.h)}</td><td>${x.r.full?`<a href="#/race/${encodeURIComponent(x.r.rid)}">${esc(x.r.race)}</a>`:esc(x.r.race)}</td><td><span class="${finCls(x.r.fin)}">${esc(x.r.fin)}</span></td></tr>`).join('')}
   </table></div>`;
 }
 function togetherPage(){
