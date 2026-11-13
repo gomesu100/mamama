@@ -257,9 +257,21 @@ function indexPage(filterYear){
 
 function horsePage(id){
   const h = byId[id]; if(!h){ app.innerHTML='<p>馬が見つかりません。</p>'; return; }
-  const sibs = HORSES.filter(x=>x.id!==h.id && damName(x.dam)===damName(h.dam) && damName(h.dam));
+  const sibs = HORSES.filter(x=>x.id!==h.id && damName(x.dam)===damName(h.dam) && damName(h.dam)).sort((a,b)=>a.birth<b.birth?-1:a.birth>b.birth?1:0);
   const kids = (h.kids||[]).map(id=>HORSES.find(x=>x.id===id)).filter(Boolean);
   const kidHtml = k => { const gk = (k.kids||[]).map(id=>HORSES.find(x=>x.id===id)).filter(Boolean); return `<li>${linkHorse(k)} <span class="small">${esc(k.birth_year)}年生・${h.sex==='牝'?`父${esc(k.sire)}`:`母${esc(damName(k.dam))}`}</span>${gk.length?`<div class="small" style="margin:2px 0 2px 16px">└ 孫：${gk.map(g=>linkHorse(g)).join('・')}</div>`:''}</li>`; };
+  const kinG = (()=>{ const ped = (EXTRA.ped[h.id]||{}).tree || {}; const out = []; const seen = new Set();
+    const push = (x, rel) => { if(x && x.id!==h.id && x.graded && x.graded.length && !seen.has(x.id)){ seen.add(x.id); out.push({x, rel}); } };
+    push(HORSES.find(x=>x.name===h.sire), '父');
+    push(HORSES.find(x=>x.name===damName(h.dam)), '母');
+    [['父父','父方の祖父'],['父母','父方の祖母'],['母父','母方の祖父'],['母母','母方の祖母']].forEach(([k,rel])=>{ const n = ped[k]; if(n) HORSES.filter(x=>x.name===n && x.birth_year<h.birth_year).forEach(x=>push(x, rel)); });
+    sibs.forEach(s=>{ const full = s.sire===h.sire && h.sire; const base = s.birth_year<h.birth_year ? (s.sex==='牝'?'姉':'兄') : s.birth_year>h.birth_year ? (s.sex==='牝'?'妹':'弟') : (s.sex==='牝'?'姉妹':'兄弟'); push(s, (full?'全':'')+base); });
+    const uncle = (gd, selfName, side) => { if(!gd) return; HORSES.filter(x=>damName(x.dam)===gd && x.name!==selfName && x.id!==h.id).forEach(x=>push(x, side+(x.sex==='牝'?'の叔母':'の叔父'))); };
+    uncle(ped['父母'], h.sire, '父方'); uncle(ped['母母'], damName(h.dam), '母方');
+    kids.forEach(k=>push(k, '子'));
+    kids.forEach(k=> (k.kids||[]).forEach(gid=>push(byId[gid], '孫')));
+    return out; })();
+  const kinHtml = kinG.length ? `<h2>近親の重賞馬</h2><ul class="hlist">${kinG.map(({x, rel})=>`<li><span class="bdg gold">${esc(rel)}</span>${linkHorse(x)} <span class="small">${x.graded.map(g=>`${esc(g.date)} ${g.full?`<a href="#/race/${encodeURIComponent(g.rid)}"><b>${esc(g.race)}</b></a>`:`<b>${esc(g.race)}</b>`}${gpillHtml(g.grade)}`).join(' ・ ')}</span></li>`).join('')}</ul>` : '';
   const sireKids = HORSES.filter(x=>x.id!==h.id && x.sire===h.sire);
   const row=(k,v)=> v && v!=='-' ? `<tr><th>${k}</th><td>${v}</td></tr>` : '';
   const enName = EXTRA.en[h.id] || '', hkName = EXTRA.hk[h.id] || '';
@@ -291,8 +303,9 @@ function horsePage(id){
   </div>
   <h2>馬名由来</h2><p>${esc(dash(h.origin))}</p>
   ${(h.career_disp && (h.career_disp.includes('→') || h.career_disp.includes('（馬主'))) ? `<h2>経歴</h2><p>${esc(h.career_disp)}</p>` : ''}
-  ${sibs.length?`<h2>兄弟馬（母：${esc(damName(h.dam))}）</h2><ul class="hlist">${sibs.map(s=>{const full = s.sire===h.sire && h.sire; const rel = !full ? '' : (s.birth_year<h.birth_year ? (s.sex==='牝'?'全姉':'全兄') : s.birth_year>h.birth_year ? (s.sex==='牝'?'全妹':'全弟') : (s.sex==='牝'?'全姉妹':'全兄弟')); return `<li>${linkHorse(s)}${rel?` <span class="bdg full">${rel}</span>`:''} <span class="small">父${esc(s.sire)}・${esc(s.birth_year)}年生</span></li>`;}).join('')}</ul>`:''}
+  ${sibs.length?`<h2>兄弟馬（母：${esc(damName(h.dam))}）</h2><ul class="hlist">${sibs.map(s=>{const full = s.sire===h.sire && h.sire; const base = s.birth_year<h.birth_year ? (s.sex==='牝'?'姉':'兄') : s.birth_year>h.birth_year ? (s.sex==='牝'?'妹':'弟') : (s.sex==='牝'?'姉妹':'兄弟'); const rel = (full?'全':'')+base; return `<li>${linkHorse(s)} <span class="bdg ${full?'c9':'c0'}">${rel}</span>${s.graded&&s.graded.length?` <span class="bdg gold">★重賞勝ち</span>`:''} <span class="small">父${esc(s.sire)}・${esc(s.birth_year)}年生</span></li>`;}).join('')}</ul>`:''}
   ${kids.length?`<h2>産駒（千代乃氏所有馬）</h2><ul class="hlist">${kids.map(kidHtml).join('')}</ul>`:''}
+  ${kinHtml}
   ${sireKids.length?`<h2>同じ父の所有馬</h2><p class="small">${sireKids.map(s=>linkHorse(s)).join('、')}</p>`:''}
   ${pedSection(h)}
   ${(()=>{ const rivals = Object.entries(EXTRA.opp).map(([name, meets])=>{ const ms = meets.filter(m=>m.horse_id===h.id); if(ms.length<2) return null; let a=0,b=0; ms.forEach(m=>{ const x=parseInt(m.own_fin), y=parseInt(m.opp_fin); if(!isNaN(x)&&!isNaN(y)){ if(x<y) a++; else if(x>y) b++; } }); return {name, n: ms.length, a, b}; }).filter(Boolean).sort((x,y)=>y.n-x.n || x.name.localeCompare(y.name,'ja')).slice(0,5); return rivals.length?`<h2>よく対戦した馬</h2><ul class="hlist">${rivals.map(r=>`<li><a href="#/opp/${encodeURIComponent(r.name)}">${esc(r.name)}</a> <span class="small">対戦${r.n}回（${esc(h.name)}の先着${r.a}回／後着${r.b}回）</span></li>`).join('')}</ul>`:''; })()}
