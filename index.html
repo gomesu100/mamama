@@ -215,7 +215,7 @@ function home(){
 }
 
 function activePage(){
-  const rank = {'オープン':0, '3勝クラス':1, '2勝クラス':2, '1勝クラス':3, '未勝利':4, '未出走':5, '地方（園田）':6};
+  const rank = {'オープン':0, '3勝クラス':1, '2勝クラス':2, '1勝クラス':3, '未勝利':4, '地方（園田）':5, '未出走':6};
   const list = HORSES.filter(h=>h.active).slice().sort((a,b)=>(rank[a.class_label]-rank[b.class_label]) || (b.birth_year||'').localeCompare(a.birth_year||'') || b.id.localeCompare(a.id));
   const cls = c => c==='オープン' ? 'op' : c==='3勝クラス' ? 'c3' : c==='2勝クラス' ? 'c2' : c==='1勝クラス' ? 'c1' : c==='未出走' ? 'c9' : 'c0';
   app.innerHTML = `<h1>現役馬（${list.length}頭）</h1>
