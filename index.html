@@ -54,6 +54,7 @@ table.races{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5p
 table.races th,table.races td{padding:4px 7px;text-align:left;white-space:nowrap;border-top:1px solid #f7e3ea}
 table.races th{background:var(--head);border-top:none;color:#8a4a5e}
 table.races tr:nth-child(even) td{background:#fff8fa}
+.gnum{display:inline-block;min-width:1.7em;text-align:center;padding:0 .25em;border-radius:5px;font-weight:700;border:1px solid rgba(0,0,0,.16);line-height:1.5}
 .racewrap{overflow-x:auto}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:14px 0}
 .card{position:relative;border:1.5px solid var(--line);border-radius:14px;padding:12px;background:#fff;box-shadow:var(--shadow);text-align:center}
@@ -176,6 +177,9 @@ const app = document.getElementById('app');
 const esc = s => (s??'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dash = s => (s===undefined||s===null||s==='' ) ? '-' : s;
 const finCls = f => f==='1'?'fin1':f==='2'?'fin2':f==='3'?'fin3':'';
+const FRAME_STYLE = {1:['#ffffff','#333'],2:['#2b2b2b','#fff'],3:['#e60012','#fff'],4:['#0068b7','#fff'],5:['#ffdc00','#333'],6:['#009944','#fff'],7:['#f39800','#333'],8:['#ff7bac','#333']};
+const frameOf = (num, F) => { if(F<=8) return num; const sizes=[1,1,1,1,1,1,1,1]; let extra=F-8, i=7; while(extra>0){ sizes[i]++; extra--; i--; if(i<0) i=7; } let start=1; for(let f=0; f<8; f++){ if(num>=start && num<start+sizes[f]) return f+1; start+=sizes[f]; } return 8; };
+const gnumHtml = (num, F) => { if(num==null) return ''; const s = FRAME_STYLE[frameOf(num, F)] || ['#eee','#333']; return `<span class="gnum" style="background:${s[0]};color:${s[1]}">${num}</span>`; };
 const gpillHtml = g => `<span class="gpill ${/^(GI|JpnI)$/.test(g)?'g1':/^(GII|JpnII)$/.test(g)?'g2':'g3'}">${esc(g)}</span>`;
 const byId = {}; HORSES.forEach(h=>byId[h.id]=h);
 function damName(d){ const m=(d||'').match(/^(.*?)（/); return m?m[1]:d; }
@@ -379,7 +383,7 @@ function racePage(rid){
   if(!meta || !order){ app.innerHTML = '<p>このレースの全着順はまだ収録されていません。</p>'; return; }
   app.innerHTML = `<div class="silkband"><div class="t">★ ${esc(meta.place)}${esc(meta.rnd)}R ${esc(meta.race)} ★</div><div class="s">${esc(meta.date)} ・ ${esc(dash(meta.grade))} ・ ${esc(meta.surface)}${esc(meta.dist)}${(EXTRA.videos||{})[rid]?` ・ <a href="${esc((EXTRA.videos||{})[rid])}" target="_blank" rel="noopener">🎥 レース映像</a>`:''}</div></div>
   <div class="racewrap"><table class="races"><tr><th>着順</th><th>馬番</th><th>馬名</th><th>騎手</th></tr>
-  ${order.map(o=>{ const oid = EXTRA.idByName[o.name]; return `<tr${oid?' style="font-weight:800"':''}><td><span class="${finCls(o.fin)}">${esc(o.fin)}</span></td><td>${o.num!=null?esc(String(o.num)):''}</td><td>${oid?`<a href="#/horse/${oid}">${esc(o.name)}</a>`:`<a href="#/opp/${encodeURIComponent(o.name)}">${esc(o.name)}</a>`}</td><td>${o.jockey?`<a href="#/jockey/${encodeURIComponent(o.jockey)}">${esc(o.jockey)}</a>`:''}</td></tr>`; }).join('')}
+  ${order.map(o=>{ const oid = EXTRA.idByName[o.name]; return `<tr${oid?' style="font-weight:800"':''}><td><span class="${finCls(o.fin)}">${esc(o.fin)}</span></td><td>${gnumHtml(o.num, order.length)}</td><td>${oid?`<a href="#/horse/${oid}">${esc(o.name)}</a>`:`<a href="#/opp/${encodeURIComponent(o.name)}">${esc(o.name)}</a>`}</td><td>${o.jockey?`<a href="#/jockey/${encodeURIComponent(o.jockey)}">${esc(o.jockey)}</a>`:''}</td></tr>`; }).join('')}
   </table></div>
   <p class="small">太字は寺田千代乃氏所有馬。対戦馬の名前からは、その馬が対戦した所有馬の一覧へ飛べます。</p>`;
 }
