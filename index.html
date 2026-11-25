@@ -306,7 +306,6 @@ function horsePage(id){
     ${row('中央抹消日', h.jra_out)}${row('地方抹消日', h.nar_out)}
   </table>
   ${(h.titles||[]).length?`<div class="titles">${h.titles.map(t=>`<a class="tbadge ${t.tier}" href="#/title/${encodeURIComponent(t.key||t.text)}">${t.icon} ${esc(t.text)}${t.note?` <span class="tnote">${esc(t.note)}</span>`:''}</a>`).join('')}</div>`:''}
-  ${(h.bonds||[]).length?`<h2>絆</h2><ul class="hlist">${h.bonds.map(b=>{const p=byId[b.to]; return p?`<li><span class="tbadge blue">${esc(b.label)}</span> ${linkHorse(p)}${b.note?` <span class="small">${esc(b.note)}</span>`:''}</li>`:'';}).join('')}</ul>`:''}
   ${h.graded && h.graded.length?`<div class="gbox"><div class="t">★ 重賞勝ち ★</div><ul>${h.graded.map(g=>`<li>${esc(g.date)} ${esc(g.place)} ${g.full?`<a href="#/race/${encodeURIComponent(g.rid)}"><b>${esc(g.race)}</b></a>`:`<b>${esc(g.race)}</b>`}${gpillHtml(g.grade)}${g.jockey?` <span class="small">${esc(g.jockey)}騎手</span>`:''}${g.rec?' ⏱レコード':''}${(EXTRA.videos||{})[g.rid]?` <a class="vidpill" href="${esc((EXTRA.videos||{})[g.rid])}" target="_blank" rel="noopener" title="レース映像を見る">🎥</a>`:''}</li>`).join('')}</ul></div>`:''}
   <div class="nowbox"><div class="t">近況</div>
   ${h.last_race?`<div>最終出走：${esc(h.last_race.date)} ${esc(h.last_race.place)} ${esc(h.last_race.race)}（${esc(h.last_race.fin)}着）</div>`:`<div>${h.races.length?'出走記録なし':'未出走'}</div>`}
@@ -324,6 +323,7 @@ function horsePage(id){
   ${kinHtml}
   ${sireKids.length?`<h2>同じ父の所有馬</h2><p class="small">${sireKids.map(s=>linkHorse(s)).join('、')}</p>`:''}
   ${pedSection(h)}
+  ${(h.bonds||[]).length?`<h2>絆</h2><ul class="hlist">${h.bonds.map(b=>{const p=byId[b.to]; return p?`<li><span class="tbadge blue">${esc(b.label)}</span> ${linkHorse(p)}${b.note?` <span class="small">${esc(b.note)}</span>`:''}</li>`:'';}).join('')}</ul>`:''}
   ${(()=>{ const rivals = Object.entries(EXTRA.opp).map(([name, meets])=>{ const ms = meets.filter(m=>m.horse_id===h.id); if(ms.length<2) return null; let a=0,b=0; ms.forEach(m=>{ const x=parseInt(m.own_fin), y=parseInt(m.opp_fin); if(!isNaN(x)&&!isNaN(y)){ if(x<y) a++; else if(x>y) b++; } }); return {name, n: ms.length, a, b}; }).filter(Boolean).sort((x,y)=>y.n-x.n || x.name.localeCompare(y.name,'ja')).slice(0,5); return rivals.length?`<h2>よく対戦した馬</h2><ul class="hlist">${rivals.map(r=>`<li><a href="#/opp/${encodeURIComponent(r.name)}">${esc(r.name)}</a> <span class="small">対戦${r.n}回（${esc(h.name)}の先着${r.a}回／後着${r.b}回）</span></li>`).join('')}</ul>`:''; })()}
   <h2>戦績（${h.races.length}件）</h2>
   <div class="racewrap"><table class="races"><tr><th>日付</th><th>場所</th><th>R</th><th>レース名</th><th>グレード</th><th>コース</th><th>着順</th><th>騎手</th><th>賞金</th></tr>
