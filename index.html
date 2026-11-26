@@ -283,7 +283,7 @@ function ownerPage(){
   const fmtMan = n => n>=10000 ? `${Math.floor(n/10000)}億${n%10000? (n%10000).toLocaleString()+'万' : ''}円` : `${n.toLocaleString()}万円`;
   const buys = [];
   HORSES.forEach(h=>{ const s = h.sale||''; const m = /^(.+?)\((\d{4})年\s*(.+)\)$/.exec(s); if(!m) return; let man = null; const em = /^([0-9,]+)億(?:([0-9,]+)万)?円/.exec(m[1]); if(em) man = parseInt(em[1].replace(/,/g,''))*10000 + (em[2]? parseInt(em[2].replace(/,/g,'')) : 0); else { const pm = /^([0-9,]+)万円/.exec(m[1]); if(pm) man = parseInt(pm[1].replace(/,/g,'')); } buys.push({h, price:m[1], year:m[2], rest:m[3], man}); });
-  [['ミスフーバフーバの2014','2,376万円(2014年 セレクトセール 上場No.457 購買者:寺田千代乃)'],['スウィートアンドセイヴォリーの2016','4,320万円(2016年 セレクトセール 上場No.467 購買者:寺田千代乃)'],['バージニアキャットの2016','2,052万円(2016年 セレクトセール 上場No.501 購買者:寺田千代乃)'],['プリンセスロック23','5,800万円(2023年 セレクトセール 上場No.365)']].forEach(([nm, s])=>{ const m = /^(.+?)\((\d{4})年\s*(.+)\)$/.exec(s); if(!m) return; let man = null; const pm = /^([0-9,]+)万円/.exec(m[1]); if(pm) man = parseInt(pm[1].replace(/,/g,'')); buys.push({h:null, nm, price:m[1], year:m[2], rest:m[3], man}); });
+  [['ミスフーバフーバの2014','2,376万円(2014年 セレクトセール 上場No.457)'],['スウィートアンドセイヴォリーの2016','4,320万円(2016年 セレクトセール 上場No.467)'],['バージニアキャットの2016','2,052万円(2016年 セレクトセール 上場No.501)'],['プリンセスロック23','5,800万円(2023年 セレクトセール 上場No.365)']].forEach(([nm, s])=>{ const m = /^(.+?)\((\d{4})年\s*(.+)\)$/.exec(s); if(!m) return; let man = null; const pm = /^([0-9,]+)万円/.exec(m[1]); if(pm) man = parseInt(pm[1].replace(/,/g,'')); buys.push({h:null, nm, price:m[1], year:m[2], rest:m[3], man}); });
   const byYear = {}; buys.forEach(b=>{ (byYear[b.year] ||= []).push(b); });
   const years = Object.keys(byYear).sort().reverse();
   const totalMan = buys.reduce((a,b)=>a+(b.man||0), 0);
