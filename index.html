@@ -197,7 +197,7 @@ ul.xlist li{padding:4px 2px;border-bottom:1px dashed #f3d9e2}
 <header class="site">
   <div class="title"><a href="#/">千代乃所有馬Wiki</a></div>
   <nav class="main">
-    <a href="#/">トップ</a><span class="hasdrop"><button class="dropbtn" type="button">馬 ▾</button><span class="drop"><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">データ ▾</button><span class="drop"><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/titles">称号一覧</a><a href="#/bonds">絆</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">読み物 ▾</button><span class="drop"><a href="#/feed">近況</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a><a href="#/owner">千代乃氏について</a></span></span>
+    <a href="#/">トップ</a><span class="hasdrop"><button class="dropbtn" type="button">馬 ▾</button><span class="drop"><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">データ ▾</button><span class="drop"><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/titles">称号一覧</a><a href="#/bonds">絆</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a><a href="#/sires">種牡馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">読み物 ▾</button><span class="drop"><a href="#/feed">近況</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a><a href="#/owner">千代乃氏について</a></span></span>
   </nav>
 </header>
 <main id="app"></main>
@@ -504,10 +504,11 @@ function listPage(title, pred, render){
   const list = HORSES.filter(pred);
   app.innerHTML = `<h1>${esc(title)}</h1><ul class="hlist">${list.map(render).join('')}</ul>`;
 }
+function famStats(hs){ const st = hs.reduce((a,h)=>a+(h.starts||0),0), wn = hs.reduce((a,h)=>a+(h.wins||0),0), gr = hs.filter(h=>(h.graded_wins||[]).length).length; return {st, wn, gr, rate: st? (100*wn/st).toFixed(1) : '0.0', top: hs.slice().sort((a,b)=>(b.wins||0)-(a.wins||0))[0]}; }
 function familiesPage(){
   const groups = {}; HORSES.forEach(h=>{ (groups[h.fno||'-'] ||= []).push(h); });
-  app.innerHTML = `<h1>牝系（ファミリーナンバー）</h1>` + Object.keys(groups).sort().map(f=>
-    `<h2><a href="#/family/${encodeURIComponent(f)}">${esc(f)}</a>（${groups[f].length}頭）</h2><p class="small">${groups[f].map(linkHorse).join('、')}</p>`).join('');
+  app.innerHTML = `<h1>牝系（ファミリーナンバー）</h1>` + Object.keys(groups).sort().map(f=>{ const hs = groups[f], s = famStats(hs);
+    return `<h2><a href="#/family/${encodeURIComponent(f)}">${esc(f)}</a>（${hs.length}頭）</h2><p class="small">通算 ${s.st}戦${s.wn}勝・勝率${s.rate}%・重賞勝ち${s.gr}頭${s.top && s.top.wins ? `・最多勝は${linkHorse(s.top)}（${s.top.wins}勝）` : ''}</p><p class="small">${hs.map(linkHorse).join('、')}</p>`; }).join('');
 }
 function stablesOf(h){
   const out = [];
@@ -529,8 +530,8 @@ function stablesOf(h){
 }
 function trainersPage(){
   const groups = {}; HORSES.forEach(h=>{ stablesOf(h).forEach(t=>{ (groups[t] ||= []).push(h); }); });
-  app.innerHTML = `<h1>調教師</h1><p class="small">転厩した馬は、所属したすべての調教師のところに載せています（頭数はのべ）。</p><ul class="hlist">` + Object.entries(groups).sort((a,b)=>b[1].length-a[1].length).map(([t,hs])=>
-    `<li><a href="#/trainer/${encodeURIComponent(t)}">${esc(t)}</a> <span class="small">${hs.length}頭</span></li>`).join('') + `</ul>`;
+  app.innerHTML = `<h1>調教師</h1><p class="small">転厩した馬は、所属したすべての調教師のところに載せています（頭数はのべ）。成績は所属馬の通算の合計です。</p><ul class="hlist">` + Object.entries(groups).sort((a,b)=>b[1].length-a[1].length).map(([t,hs])=>{ const s = famStats(hs);
+    return `<li><a href="#/trainer/${encodeURIComponent(t)}">${esc(t)}</a> <span class="small">${hs.length}頭・${s.st}戦${s.wn}勝・勝率${s.rate}%・重賞勝ち${s.gr}頭</span></li>`; }).join('') + `</ul>`;
 }
 
 function jockeyMap(){
@@ -713,6 +714,35 @@ function titlesPage(){
     return `<h2>${label}（${es.length}種）</h2><div class="titles">${es.map(e=>`<a class="tbadge ${e.tier}" href="#/title/${encodeURIComponent(e.key)}">${e.icon} ${esc(e.text)}</a> <span class="small">${e.hs.size}頭</span>`).join(' ')}</div>`; }).join('') +
   `<p class="small">称号バッジを押すと、その称号を持つ馬の一覧へ飛べます。頭数が少ない順に並んでいます。</p>`;
 }
+function trainerPage(name){
+  const hs = HORSES.filter(h=>stablesOf(h).includes(name));
+  if(!hs.length){ app.innerHTML = '<p>調教師が見つかりません。</p>'; return; }
+  const s = famStats(hs);
+  const rows = hs.slice().sort((a,b)=> (b.wins||0)-(a.wins||0) || (b.starts||0)-(a.starts||0));
+  app.innerHTML = `<div class="silkband"><div class="t">★ ${esc(name)} ★</div><div class="s">寺田千代乃氏所有馬の所属記録（転厩した馬はのべ）</div></div>
+  <p>所属馬 <b>${hs.length}頭</b>・通算 <b>${s.st}戦${s.wn}勝</b>（勝率 ${s.rate}%）・重賞勝ち馬 <b>${s.gr}頭</b></p>
+  <div class="racewrap"><table class="races"><tr><th>馬名</th><th>生年</th><th>性別</th><th>戦績</th><th>重賞勝ち</th></tr>
+  ${rows.map(h=>`<tr><td>${linkHorse(h)}</td><td>${esc(h.birth_year)}</td><td>${esc(h.sex)}</td><td>${h.starts}戦${h.wins}勝</td><td>${(h.graded_wins||[]).length? esc(h.graded_wins.join('・')) : '-'}</td></tr>`).join('')}
+  </table></div>
+  <p class="small">成績は各馬の通算で、他の厩舎にいた時期のものも含みます。</p>`;
+}
+function siresPage(){
+  const groups = {}; HORSES.forEach(h=>{ if(h.sire && h.sire!=='-') (groups[h.sire] ||= []).push(h); });
+  const rows = Object.entries(groups).map(([sire, hs])=>({sire, hs, s: famStats(hs)})).sort((a,b)=> b.hs.length-a.hs.length || b.s.wn-a.s.wn);
+  app.innerHTML = `<div class="silkband"><div class="t">★ 種牡馬 ★</div><div class="s">千代乃氏所有馬の父・全${rows.length}頭</div></div>
+  <div class="racewrap"><table class="races"><tr><th>父</th><th>産駒</th><th>通算</th><th>勝率</th><th>重賞勝ち馬</th></tr>
+  ${rows.map(({sire, hs, s})=>`<tr><td><a href="#/sire/${encodeURIComponent(sire)}">${esc(sire)}</a></td><td>${hs.length}頭</td><td>${s.st}戦${s.wn}勝</td><td>${s.rate}%</td><td>${s.gr}頭</td></tr>`).join('')}
+  </table></div>`;
+}
+function sirePage(name){
+  const hs = HORSES.filter(h=>h.sire===name);
+  if(!hs.length){ app.innerHTML = '<p>種牡馬が見つかりません。</p>'; return; }
+  const s = famStats(hs);
+  const rows = hs.slice().sort((a,b)=> String(a.birth_year).localeCompare(String(b.birth_year)) || (b.wins||0)-(a.wins||0));
+  app.innerHTML = `<div class="silkband"><div class="t">★ 父 ${esc(name)} ★</div><div class="s">千代乃氏所有の産駒</div></div>
+  <p>産駒 <b>${hs.length}頭</b>・通算 <b>${s.st}戦${s.wn}勝</b>（勝率 ${s.rate}%）・重賞勝ち馬 <b>${s.gr}頭</b></p>
+  <div class="siregrid">${rows.map(h=>`<div class="sirecard"><div class="nm">${faceImg(h)}${linkHorse(h)}</div><div class="small">母：${esc(h.dam)}</div><div class="small">${esc(h.birth_year)}年生・${h.starts}戦${h.wins}勝${(h.graded_wins||[]).length?`・重賞${h.graded_wins.length}勝`:''}</div></div>`).join('')}</div>`;
+}
 function titlePage(key){
   if(key==='初勝利'){
     const pairs = HORSES.flatMap(h=>(h.titles||[]).filter(t=>(t.key||t.text)===key).map(t=>({h, t})));
@@ -818,9 +848,10 @@ function route(){
   else if(page==='chronicle') chroniclePage();
   else if(page==='year') yearPage(parts[1]);
   else if(page==='family'){ const f=decodeURIComponent(parts.slice(1).join('/')); listPage('牝系 '+f, h=>h.fno===f, h=>`<li>${linkHorse(h)} <span class="small">母${esc(damName(h.dam))}・${esc(h.birth_year)}年生</span></li>`); }
-  else if(page==='sire'){ const s=decodeURIComponent(parts.slice(1).join('/')); listPage('父 '+s+' の所有馬', h=>h.sire===s, h=>`<li>${linkHorse(h)} <span class="small">母${esc(damName(h.dam))}・${h.starts}戦${h.wins}勝</span></li>`); }
+  else if(page==='sire') sirePage(decodeURIComponent(parts.slice(1).join('/')));
+  else if(page==='sires') siresPage();
   else if(page==='dam'){ const s=decodeURIComponent(parts.slice(1).join('/')); listPage('母 '+s+' の産駒', h=>damName(h.dam)===s, h=>`<li>${linkHorse(h)} <span class="small">父${esc(h.sire)}・${esc(h.birth_year)}年生</span></li>`); }
-  else if(page==='trainer'){ const s=decodeURIComponent(parts.slice(1).join('/')); listPage(s+' の管理馬', h=>stablesOf(h).includes(s), h=>{ const st=stablesOf(h); return `<li>${linkHorse(h)} <span class="small">${esc(h.birth_year)}年生${st.length>1?`・厩舎遍歴：${st.map(esc).join(' → ')}`:''}</span></li>`; }); }
+  else if(page==='trainer') trainerPage(decodeURIComponent(parts.slice(1).join('/')));
   else home();
 }
 window.addEventListener('hashchange', route);
