@@ -560,10 +560,21 @@ function bondPairs(key){
   return {pairs, horses: hs.size};
 }
 function bondPage(key){
-  const entries = HORSES.flatMap(h=>(h.bonds||[]).filter(b=>bondLabels(key).includes(b.label)).map(b=>({h, b}))).sort((x,y)=>String(x.b.note).localeCompare(String(y.b.note)) || x.h.id.localeCompare(y.h.id));
+  const labs = bondLabels(key);
+  const entries = HORSES.flatMap(h=>(h.bonds||[]).filter(b=>labs.includes(b.label)).map(b=>({h, b})));
+  const groups = {};
+  entries.forEach(e=>{ const k=[e.h.id, e.b.to].sort().join('|'); (groups[k] ||= []).push(e); });
+  const blocks = Object.values(groups).map(g=>{
+    let A, B;
+    if(labs.length > 1){ const led = g.find(({b})=>b.label==='誘導馬の縁') || g[0]; A = led.h; B = byId[led.b.to]; }
+    else { const ids = [g[0].h.id, g[0].b.to].sort(); A = byId[ids[0]]; B = byId[ids[1]]; }
+    const src = labs.length > 1 ? g.filter(({b})=>b.label==='誘導馬の縁') : g;
+    const notes = [...new Set(src.map(({b})=>b.note).filter(Boolean))].sort();
+    return {A, B, notes};
+  }).sort((x,y)=>String(x.notes[0]||'').localeCompare(String(y.notes[0]||'')) || x.A.id.localeCompare(y.A.id));
   const st = bondPairs(key);
   app.innerHTML = `<div class="silkband"><div class="t">★ 絆：${esc(key)} ★</div><div class="s">${BOND_ICON[key]||'💞'} この絆のペア：${st.pairs}組・${st.horses}頭</div></div>
-  <ul class="hlist">${entries.map(({h, b})=>{ const p=byId[b.to]; return p?`<li>${linkHorse(h)} <span class="tbadge blue">${BOND_ICON[b.label]||'💞'} ${esc(b.label)}</span> ${linkHorse(p)}${b.note?` <span class="small">${esc(b.note)}</span>`:''}</li>`:''; }).join('')}</ul>
+  <ul class="hlist">${blocks.map(({A, B, notes})=>`<li style="margin-bottom:14px"><div>${linkHorse(A)}</div><div><span class="tbadge blue">${BOND_ICON[key]||'💞'} ${esc(key)}</span></div><div>${linkHorse(B)}</div>${notes.length?`<div class="small">${notes.map(esc).join('<br>')}</div>`:''}</li>`).join('')}</ul>
   <p class="small">絆バッジを押すと、その絆のペア一覧へ飛べます。<a href="#/bonds">絆の一覧</a></p>`;
 }
 function bondsPage(){
