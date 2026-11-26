@@ -388,7 +388,7 @@ function horsePage(id){
   const nameSub = enName ? `<div class="namesub"><span class="enname">${esc(enName)}</span></div>` : '';
   app.innerHTML = `<h1>${faceImg(h,'faceL')}${esc(h.name)}</h1>
   ${nameSub}
-  <table class="infobox"><caption>${esc(h.name)}</caption>
+  <table class="infobox">
     <tr><th>性別</th><td>${esc(dash(h.sex))}</td></tr>
     <tr><th>生年月日</th><td>${esc(dash(h.birth))}</td></tr>
     <tr><th>毛色</th><td>${esc(dash(h.color))}</td></tr>
