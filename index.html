@@ -137,6 +137,7 @@ h2::before{content:'★';color:#f091b0;font-size:13px;margin-right:5px;vertical-
 .fchip.on{background:var(--peach);border-color:var(--peach);color:#fff}
 .foldh{cursor:pointer;display:block;width:fit-content}
 .foldh:hover{background:linear-gradient(transparent 62%,#f9cbdc 62%)}
+.subh{font-weight:800;color:#7c4457;margin:12px 0 4px;font-size:15px}
 .farr{background:var(--peach);color:#fff;border-radius:999px;padding:2px 10px;font-size:11.5px;font-weight:800;margin-left:8px;white-space:nowrap;vertical-align:2px}
 #farrow{background:var(--peach);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px}
 .yrow td{background:#fff0f4;font-weight:800;color:#7c4457;cursor:pointer}
@@ -368,13 +369,13 @@ function horsePage(id){
   const prod = (EXTRA.produce||{})[h.id] || [];
   const prodHtml = prod.length ? `<h2 class="foldh" onclick="foldT(this)">繁殖・全産駒 <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><ul class="hlist">${prod.map(p=>{ const k = HORSES.find(x=>x.name===p.name && String(x.birth_year)===String(p.year)); const gk = k ? (k.kids||[]).map(id=>byId[id]).filter(Boolean) : []; return `<li>${esc(p.year)}年生 ${esc(p.sex)} <span class="small">父${esc(p.sire)}</span> ― ${k?linkHorse(k):esc(p.name && p.name!=='-' ? p.name : '未命名')}${p.note?` <span class="small">${esc(p.note)}</span>`:''}${gk.length?`<div class="small" style="margin:2px 0 2px 16px">└ 孫：${gk.map(g=>linkHorse(g)).join('・')}</div>`:''}</li>`; }).join('')}</ul></div>` : '';
   const sireKids = HORSES.filter(x=>x.id!==h.id && x.sire===h.sire);
-  const sibHtml = (sibs.length || outSibs.length) ? `<p class="small">母：${esc(damName(h.dam))}の仔たち</p><ul class="hlist">${[...sibs.map(s=>({o:0, y:s.birth_year, html:`<li>${linkHorse(s)} <span class="bdg ${(s.sire===h.sire && h.sire)?'c9':'c0'}">${(s.sire===h.sire && h.sire?'全':'')+(s.birth_year<h.birth_year ? (s.sex==='牝'?'姉':'兄') : s.birth_year>h.birth_year ? (s.sex==='牝'?'妹':'弟') : (s.sex==='牝'?'姉妹':'兄弟'))}</span>${s.graded&&s.graded.length?` <span class="bdg gold">★重賞勝ち</span>`:''} <span class="small">父${esc(s.sire)}・${esc(s.birth_year)}年生</span></li>`})), ...outSibs.map(s=>({o:1, y:parseInt(s.year)||0, html:`<li>${esc(s.name && s.name!=='-' ? s.name : '未命名')} <span class="bdg ${(s.sire===h.sire && h.sire)?'c9':'c0'}">${(s.sire===h.sire && h.sire?'全':'')+((parseInt(s.year)||0)<h.birth_year ? (s.sex==='牝'?'姉':'兄') : (parseInt(s.year)||0)>h.birth_year ? (s.sex==='牝'?'妹':'弟') : (s.sex==='牝'?'姉妹':'兄弟'))}</span> <span class="small">父${esc(s.sire)}・${esc(s.year)}年生・${esc(s.sex)}${s.note?`・${esc(s.note)}`:''}</span></li>`}))].sort((a,b)=>a.y-b.y||a.o-b.o).map(x=>x.html).join('')}</ul>` : '';
+  const sibHtml = (sibs.length || outSibs.length) ? `<p class="small">母：${esc(h.dam)}</p><ul class="hlist">${[...sibs.map(s=>({o:0, y:s.birth_year, html:`<li>${linkHorse(s)} <span class="bdg ${(s.sire===h.sire && h.sire)?'c9':'c0'}">${(s.sire===h.sire && h.sire?'全':'')+(s.birth_year<h.birth_year ? (s.sex==='牝'?'姉':'兄') : s.birth_year>h.birth_year ? (s.sex==='牝'?'妹':'弟') : (s.sex==='牝'?'姉妹':'兄弟'))}</span>${s.graded&&s.graded.length?` <span class="bdg gold">★重賞勝ち</span>`:''} <span class="small">父${esc(s.sire)}・${esc(s.birth_year)}年生</span></li>`})), ...outSibs.map(s=>({o:1, y:parseInt(s.year)||0, html:`<li>${esc(s.name && s.name!=='-' ? s.name : '未命名')} <span class="bdg ${(s.sire===h.sire && h.sire)?'c9':'c0'}">${(s.sire===h.sire && h.sire?'全':'')+((parseInt(s.year)||0)<h.birth_year ? (s.sex==='牝'?'姉':'兄') : (parseInt(s.year)||0)>h.birth_year ? (s.sex==='牝'?'妹':'弟') : (s.sex==='牝'?'姉妹':'兄弟'))}</span> <span class="small">父${esc(s.sire)}・${esc(s.year)}年生・${esc(s.sex)}${s.note?`・${esc(s.note)}`:''}</span></li>`}))].sort((a,b)=>a.y-b.y||a.o-b.o).map(x=>x.html).join('')}</ul>` : '';
   const sireHtml = sireKids.length ? `<p class="small">${sireKids.map(s=>linkHorse(s)).join('、')}</p>` : '';
   const _tabs = [];
   if (sibHtml) _tabs.push(['sib', '兄弟馬', sibHtml]);
   if (kinHtml) _tabs.push(['kin', '近親の重賞馬', kinHtml]);
   if (sireHtml) _tabs.push(['sire', '同じ父', sireHtml]);
-  const kinTabHtml = !_tabs.length ? '' : _tabs.length===1 ? `<h2>${_tabs[0][1]}</h2>${_tabs[0][2]}` : `<h2>血統系</h2><div class="atabs">${_tabs.map((t,i)=>`<button class="${i===0?'on':''}" onclick="ktab(this,'${t[0]}')">${t[1]}</button>`).join('')}</div>${_tabs.map((t,i)=>`<div class="kpane" data-kp="${t[0]}" style="${i===0?'':'display:none'}">${t[2]}</div>`).join('')}`;
+  const kinTabsInner = !_tabs.length ? '' : _tabs.length===1 ? `<p class="subh">${_tabs[0][1]}</p>${_tabs[0][2]}` : `<div class="atabs">${_tabs.map((t,i)=>`<button class="${i===0?'on':''}" onclick="ktab(this,'${t[0]}')">${t[1]}</button>`).join('')}</div>${_tabs.map((t,i)=>`<div class="kpane" data-kp="${t[0]}" style="${i===0?'':'display:none'}">${t[2]}</div>`).join('')}`;
   const row=(k,v)=> v && v!=='-' ? `<tr><th>${k}</th><td>${v}</td></tr>` : '';
   const enName = EXTRA.en[h.id] || '', hkName = EXTRA.hk[h.id] || '';
   const nameSub = enName ? `<div class="namesub"><span class="enname">${esc(enName)}</span></div>` : '';
@@ -407,12 +408,11 @@ function horsePage(id){
   ${h.lead_record?`<h2 class="foldh" onclick="foldT(this)">誘導記録（阪神競馬場・${h.lead_record.length}日） <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><div class="racewrap"><table class="races"><tr><th>日付</th><th>担当</th><th>千代乃所有馬</th></tr>${h.lead_record.map(d=>`<tr><td>${esc(d.disp)}${d.note?` <span class="small">${esc(d.note)}</span>`:''}</td><td>${esc(d.label)}</td><td>${d.led.length?`<span class="momostar">★</span> ${d.led.map(l=>`<a href="#/horse/${l.id}">${esc(l.name)}</a> <span class="small">${esc(l.rnd)}R ${esc(l.race)}（${esc(l.fin)}着）</span>`).join('、')}`:'<span class="small">出走なし</span>'}</td></tr>`).join('')}</table></div><p class="small">出典：JRA公式X「今週の誘導馬」発表ほか。★は千代乃所有馬が出走し、オリオンが誘導した日。</p></div>`:''}
   <h2>馬名由来</h2><p>${esc(dash(h.origin))}</p>
   ${(h.career_disp && (h.career_disp.includes('→') || h.career_disp.includes('（馬主'))) ? `<h2 class="foldh" onclick="foldT(this)">経歴 <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><p>${esc(h.career_disp)}</p></div>` : ''}
-  ${kinTabHtml}
   ${prodHtml}
   ${rkHtml}
   ${!prod.length && !rk.length && kids.length?`<h2 class="foldh" onclick="foldT(this)">産駒（千代乃氏所有馬） <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><ul class="hlist">${kids.map(kidHtml).join('')}</ul></div>`:''}
   
-  ${pedSection(h)}
+  ${pedSection(h, kinTabsInner)}
   ${(h.bonds||[]).length?`<h2 class="foldh" onclick="foldT(this)">絆 <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><ul class="hlist">${h.bonds.map(b=>{const p=byId[b.to]; return p?`<li><a class="tbadge blue" href="#/bond/${encodeURIComponent(b.label==='誘導した相手'?'誘導馬の縁':b.label)}">${BOND_ICON[b.label]||'💞'} ${esc(b.label)}</a> ${linkHorse(p)}${b.note?` <span class="small">${esc(b.note)}</span>`:''}</li>`:'';}).join('')}</ul></div>`:''}
   ${(()=>{ const rivals = Object.entries(EXTRA.opp).map(([name, meets])=>{ const ms = meets.filter(m=>m.horse_id===h.id); if(ms.length<2) return null; let a=0,b=0; ms.forEach(m=>{ const x=parseInt(m.own_fin), y=parseInt(m.opp_fin); if(!isNaN(x)&&!isNaN(y)){ if(x<y) a++; else if(x>y) b++; } }); return {name, n: ms.length, a, b}; }).filter(Boolean).sort((x,y)=>y.n-x.n || x.name.localeCompare(y.name,'ja')).slice(0,5); return rivals.length?`<h2 class="foldh" onclick="foldT(this)">よく対戦した馬 <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><ul class="hlist">${rivals.map(r=>`<li><a href="#/opp/${encodeURIComponent(r.name)}">${esc(r.name)}</a> <span class="small">対戦${r.n}回（${esc(h.name)}の先着${r.a}回／後着${r.b}回）</span></li>`).join('')}</ul></div>`:''; })()}
   <h2 class="foldh" onclick="foldT(this)">戦績（${h.races.length}件） <span class="farr">とじる ▴</span></h2>
@@ -439,9 +439,10 @@ function dupMap(tree){
 function crossNotation(positions){
   return positions.map(p=>(p[0]==='父'?'S':'M')+p.length).join('×');
 }
-function pedSection(h){
+function pedSection(h, tabsInner){
   const ped = (EXTRA.ped||{})[h.id];
-  if(!ped) return '';
+  if(!ped && !tabsInner) return '';
+  if(!ped) return `<h2 class="foldh" onclick="foldT(this)">血統表 <span class="farr">ひらく ▾</span></h2>\n  <div class="foldbody" style="display:none">${tabsInner}</div>`;
   const tree = ped.tree;
   const dups = dupMap(tree);
   const rows = Array.from({length:32},()=>[]);
@@ -454,10 +455,10 @@ function pedSection(h){
   }
   const tbl = rows.map(cells=>`<tr>${cells.sort((a,b)=>a.L-b.L).map(c=>`<td rowspan="${c.span}" class="${c.p.endsWith('父')?'m':'f'}${dups[c.name]?' dup':''}"><a href="#/anc/${encodeURIComponent(c.name)}">${esc(c.name)}</a>${dups[c.name]?' ★':''}</td>`).join('')}</tr>`).join('');
   const crossLines = Object.entries(dups).sort((a,b)=>b[1].length-a[1].length || a[0].localeCompare(b[0])).map(([name,ps])=>`<li>★ <a href="#/anc/${encodeURIComponent(name)}">${esc(name)}</a> <span class="small">${esc(crossNotation(ps))}（${ps.map(esc).join('・')}）</span></li>`).join('');
-  return `<h2 class="foldh" onclick="foldT(this)">5代血統表 <span class="farr">ひらく ▾</span></h2>
+  return `<h2 class="foldh" onclick="foldT(this)">血統表 <span class="farr">ひらく ▾</span></h2>
   <div class="foldbody" style="display:none"><div class="pedwrap"><table class="ped">${tbl}</table></div>
   <p class="small">青＝牡、ピンク＝牝。★はこの馬の血統表の中で重複する祖先（クロス）。馬名を押すと、その馬が血統に入っている所有馬の一覧へ飛べます。</p>
-  ${crossLines?`<h2>クロス</h2><ul class="xlist">${crossLines}</ul>`:''}</div>`;
+  ${crossLines?`<h2>クロス</h2><ul class="xlist">${crossLines}</ul>`:''}${tabsInner||''}</div>`;
 }
 function ancPage(name){
   const ped = EXTRA.ped || {};
