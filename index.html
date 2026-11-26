@@ -574,7 +574,7 @@ function bondPage(key){
   }).sort((x,y)=>String(x.notes[0]||'').localeCompare(String(y.notes[0]||'')) || x.A.id.localeCompare(y.A.id));
   const st = bondPairs(key);
   app.innerHTML = `<div class="silkband"><div class="t">★ 絆：${esc(key)} ★</div><div class="s">${BOND_ICON[key]||'💞'} この絆のペア：${st.pairs}組・${st.horses}頭</div></div>
-  <ul class="hlist">${blocks.map(({A, B, notes})=>`<li style="margin-bottom:14px"><div>${linkHorse(A)}</div><div><span class="tbadge blue">${BOND_ICON[key]||'💞'} ${esc(key)}</span></div><div>${linkHorse(B)}</div>${notes.length?`<div class="small">${notes.map(esc).join('<br>')}</div>`:''}</li>`).join('')}</ul>
+  <ul class="hlist">${blocks.map(({A, B, notes})=>`<li style="margin-bottom:14px"><div>${linkHorse(A)}<span style="color:#e88ca0">★</span>${linkHorse(B)}</div><div><span class="tbadge blue">${BOND_ICON[key]||'💞'} ${esc(key)}</span></div>${notes.length?`<div class="small">${notes.map(esc).join('<br>')}</div>`:''}</li>`).join('')}</ul>
   <p class="small">絆バッジを押すと、その絆のペア一覧へ飛べます。<a href="#/bonds">絆の一覧</a></p>`;
 }
 function bondsPage(){
