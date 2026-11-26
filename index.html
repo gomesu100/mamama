@@ -292,7 +292,7 @@ function ownerPage(){
   const pWins = HORSES.reduce((a,h)=>a+h.wins,0);
   const pJra = HORSES.reduce((a,h)=>a+h.races.filter(r=>r.fin==='1'&&JRAVp.includes(r.place)).length,0);
   const profHtml = `<table class="infobox"><caption>寺田千代乃</caption>
-  <tr><th>生年月日</th><td>1947年1月8日（神戸市生まれ）</td></tr>
+  <tr><th>生年月日</th><td>1947年1月8日（神戸市生まれ・${(()=>{ const t=new Date(); let a=t.getFullYear()-1947; if(t < new Date(t.getFullYear(),0,8)) a--; return a; })()}歳）</td></tr>
   <tr><th>職業</th><td>実業家、馬主</td></tr>
   <tr><th>会社</th><td>アートコーポレーション（アート引越センター）創業者・名誉会長</td></tr>
   <tr><th>略歴</th><td>1968年 夫・寺田寿男氏と寺田運輸を創業<br>1976年 アート引越センターを創業、翌年に社長就任<br>2019年 社長を退任し、名誉会長に就任</td></tr>
