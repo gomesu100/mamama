@@ -197,7 +197,7 @@ ul.xlist li{padding:4px 2px;border-bottom:1px dashed #f3d9e2}
 <header class="site">
   <div class="title"><a href="#/">千代乃所有馬Wiki</a></div>
   <nav class="main">
-    <a href="#/">トップ</a><span class="hasdrop"><button class="dropbtn" type="button">馬 ▾</button><span class="drop"><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">データ ▾</button><span class="drop"><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/titles">称号一覧</a><a href="#/bonds">絆</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a><a href="#/sires">種牡馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">読み物 ▾</button><span class="drop"><a href="#/feed">近況</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a><a href="#/owner">千代乃氏について</a></span></span>
+    <a href="#/">トップ</a><span class="hasdrop"><button class="dropbtn" type="button">馬 ▾</button><span class="drop"><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">データ ▾</button><span class="drop"><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a><a href="#/sires">種牡馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">読み物 ▾</button><span class="drop"><a href="#/feed">近況</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a><a href="#/owner">千代乃氏について</a></span></span>
   </nav>
 </header>
 <main id="app"></main>
@@ -420,7 +420,7 @@ function horsePage(id){
   ${!prod.length && !rk.length && kids.length?`<h2 class="foldh" onclick="foldT(this)">産駒（千代乃氏所有馬） <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><ul class="hlist">${kids.map(kidHtml).join('')}</ul></div>`:''}
   
   ${pedSection(h, kinTabsInner)}
-  ${(h.bonds||[]).length?`<h2 class="foldh" onclick="foldT(this)">絆 <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><ul class="hlist">${h.bonds.map(b=>{const p=byId[b.to]; return p?`<li><a class="tbadge blue" href="#/bond/${encodeURIComponent(b.label==='誘導した相手'?'誘導馬の縁':b.label)}">${BOND_ICON[b.label]||'💞'} ${esc(b.label)}</a> ${linkHorse(p)}${b.note?` <span class="small">${esc(b.note)}</span>`:''}</li>`:'';}).join('')}</ul></div>`:''}
+  ${(h.bonds||[]).length?`<h2 class="foldh" onclick="foldT(this)">絆 <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><ul class="hlist">${h.bonds.map(b=>{const p=byId[b.to]; return p?`<li><a class="tbadge blue" href="#/bond/${encodeURIComponent(b.label==='誘導した相手'?'誘導馬の縁':b.label)}">${BOND_ICON[b.label]||'💞'} ${esc(b.label)}</a> ${linkHorse(p)}${b.note?` <span class="small">${esc(b.note)}</span>`:''}</li>`:'';}).join('')}</ul><p class="small"><a href="#/bonds">絆の一覧</a></p></div>`:''}
   <h2 class="foldh" onclick="foldT(this)">戦績（${h.races.length}件） <span class="farr">とじる ▴</span></h2>
   <div class="foldbody"><div class="racewrap"><table class="races"><tr><th>日付</th><th>場所</th><th>R</th><th>レース名</th><th>グレード</th><th>コース</th><th>着順</th><th>騎手</th><th>賞金</th></tr>
   ${h.races.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.place)}</td><td>${esc(r.rnd)}</td><td>${r.full?`<a href="#/race/${encodeURIComponent(r.rid)}">${esc(r.race)}</a>`:esc(r.race)}${multiMap()[r.rid]?'<a class="togpill" href="#/together">同時出走</a>':''}${(r.fam||[]).map(f=>`<a class="fampill ${f.k==='寿'?'toshio':'hideki'}" href="#/title/${encodeURIComponent(f.k==='寿'?'寿男氏馬と対戦':'秀樹氏馬と対戦')}" title="${f.k==='寿'?'寺田寿男氏':'寺田秀樹氏'}の${esc(f.opp)}と同レース${f.scr?'（相手は取消）':''}">${f.k}</a>`).join('')}${(EXTRA.orionled||{})[r.rid]?`<a class="oripill" href="#/horse/A098" title="このレースはマテンロウオリオンが誘導しました">⭐オリオン誘導</a>`:''}${(EXTRA.videos||{})[r.rid]?`<a class="vidpill" href="${esc((EXTRA.videos||{})[r.rid])}" target="_blank" rel="noopener" title="レース映像を見る">🎥</a>`:''}</td><td>${esc(dash(r.grade))}</td><td>${esc(r.surface)}${esc(r.dist)}</td><td><span class="${finCls(r.fin)}">${esc(r.fin)}</span></td><td>${r.jockey?`<a href="#/jockey/${encodeURIComponent(r.jockey)}">${esc(r.jockey)}</a>`:''}</td><td>${esc(r.prize)}</td></tr>`).join('')}
@@ -750,14 +750,14 @@ function titlePage(key){
     const nh = new Set(pairs.map(p=>p.h.id)).size;
     app.innerHTML = `<div class="silkband"><div class="t">★ 称号：初勝利 ★</div><div class="s">👣 「初○○勝利」の記録：全${pairs.length}件・${nh}頭（達成日の古い順）</div></div>
     <ul class="hlist">${pairs.map(({h,t})=>`<li>${linkHorse(h)} <span class="tbadge ${t.tier}">${t.icon} ${esc(t.text)}${t.note?` <span class="tnote">${esc(t.note)}</span>`:''}</span> <span class="small">${esc(h.birth_year)}年生・${h.starts}戦${h.wins}勝</span>${t.detail?`<div class="small" style="margin:3px 0 8px 18px">${esc(t.detail)}</div>`:''}</li>`).join('')}</ul>
-    <p class="small">称号バッジを押すと、その称号を持つ馬の一覧へ飛べます。</p>`;
+    <p class="small">称号バッジを押すと、その称号を持つ馬の一覧へ飛べます。<a href="#/titles">称号の一覧</a></p>`;
     return;
   }
   const holders = HORSES.filter(h=>(h.titles||[]).some(t=>(t.key||t.text)===key));
   const sample = holders.length ? holders[0].titles.find(t=>(t.key||t.text)===key) : null;
   app.innerHTML = `<div class="silkband"><div class="t">★ 称号：${esc(key)} ★</div><div class="s">${sample?esc(sample.icon)+' ':''}この称号を持つ所有馬：${holders.length}頭</div></div>
   <ul class="hlist">${holders.flatMap(h=>h.titles.filter(t=>(t.key||t.text)===key).map(t=>`<li>${linkHorse(h)} <span class="tbadge ${t.tier}">${t.icon} ${esc(t.text)}${t.note?` <span class="tnote">${esc(t.note)}</span>`:''}</span> <span class="small">${esc(h.birth_year)}年生・${h.starts}戦${h.wins}勝</span>${t.detail?`<div class="small" style="margin:3px 0 8px 18px">${esc(t.detail)}</div>`:''}</li>`)).join('')}</ul>
-  <p class="small">称号バッジを押すと、その称号を持つ馬の一覧へ飛べます。</p>`;
+  <p class="small">称号バッジを押すと、その称号を持つ馬の一覧へ飛べます。<a href="#/titles">称号の一覧</a></p>`;
 }
 
 function calendarPage(){
