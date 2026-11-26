@@ -275,7 +275,7 @@ function ownerPage(){
   const oa = (EXTRA.ownerarts||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const fmtMan = n => n>=10000 ? `${Math.floor(n/10000)}億${n%10000? (n%10000).toLocaleString()+'万' : ''}円` : `${n.toLocaleString()}万円`;
   const buys = [];
-  HORSES.forEach(h=>{ const s = h.sale||''; const m = /^(.+?)\((\d{4})年\s*(.+)\)$/.exec(s); if(!m) return; const pm = /^([0-9,]+)万円/.exec(m[1]); buys.push({h, price:m[1], year:m[2], rest:m[3], man: pm? parseInt(pm[1].replace(/,/g,'')) : null}); });
+  HORSES.forEach(h=>{ const s = h.sale||''; const m = /^(.+?)\((\d{4})年\s*(.+)\)$/.exec(s); if(!m) return; let man = null; const em = /^([0-9,]+)億(?:([0-9,]+)万)?円/.exec(m[1]); if(em) man = parseInt(em[1].replace(/,/g,''))*10000 + (em[2]? parseInt(em[2].replace(/,/g,'')) : 0); else { const pm = /^([0-9,]+)万円/.exec(m[1]); if(pm) man = parseInt(pm[1].replace(/,/g,'')); } buys.push({h, price:m[1], year:m[2], rest:m[3], man}); });
   const byYear = {}; buys.forEach(b=>{ (byYear[b.year] ||= []).push(b); });
   const years = Object.keys(byYear).sort().reverse();
   const totalMan = buys.reduce((a,b)=>a+(b.man||0), 0);
