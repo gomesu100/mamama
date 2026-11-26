@@ -283,18 +283,26 @@ function freset(){
   document.querySelectorAll('.fchip').forEach(b=>b.classList.remove('on'));
   if (window._drawIndex) window._drawIndex(document.getElementById('q') ? document.getElementById('q').value : '');
 }
+let F_OPEN = true;
+function ftoggle(){
+  F_OPEN = !F_OPEN;
+  const b = document.getElementById('fbody'); if (b) b.style.display = F_OPEN ? '' : 'none';
+  const a = document.getElementById('farrow'); if (a) a.textContent = F_OPEN ? '▾' : '▸';
+}
 
 function indexPage(filterYear){
   const chip = (g,v,l)=>`<button class="fchip${IDX_F[g]===v?' on':''}" data-fg="${g}" data-fv="${v}" onclick="fchip('${g}','${v}')">${l}</button>`;
   app.innerHTML = `<h1>全馬一覧</h1>
   <input class="search" id="q" placeholder="馬名・父・母・調教師で検索">
   <div class="fpanel">
-    <div class="fh"><span>🎮 絞り込み</span><span class="fcount" id="fcount"></span><button class="freset" onclick="freset()">リセット</button></div>
+    <div class="fh"><span style="cursor:pointer" onclick="ftoggle()">🎮 絞り込み <span id="farrow">${F_OPEN?'▾':'▸'}</span></span><span class="fcount" id="fcount"></span><button class="freset" onclick="freset()">リセット</button></div>
+    <div id="fbody" style="${F_OPEN?'':'display:none'}">
     <div class="frow"><span class="fl">年代</span>${chip('dec','202','2020年代')}${chip('dec','201','2010年代')}${chip('dec','200','2000年代')}${chip('dec','199','1990年代')}</div>
     <div class="frow"><span class="fl">性別</span>${chip('sex','牡','牡')}${chip('sex','牝','牝')}${chip('sex','セン','セン')}</div>
     <div class="frow"><span class="fl">毛色</span>${['鹿毛','黒鹿毛','栗毛','青鹿毛','芦毛','青毛'].map(c=>chip('coat',c,c)).join('')}</div>
     <div class="frow"><span class="fl">冠名</span>${chip('crown','マテンロウ','マテンロウ')}${chip('crown','ディア','ディア')}${chip('crown','その他','その他')}</div>
     <div class="frow"><span class="fl">クラス</span>${chip('feat','graded','★重賞勝ち')}${chip('feat','オープン','オープン')}${chip('feat','3勝クラス','3勝クラス')}${chip('feat','2勝クラス','2勝クラス')}${chip('feat','1勝クラス','1勝クラス')}${chip('feat','未勝利','未勝利')}${chip('feat','未出走','未出走')}${chip('feat','地方（園田）','地方')}</div>
+    </div>
   </div>
   <div id="list"></div>`;
   const draw = (q)=>{
