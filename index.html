@@ -127,6 +127,14 @@ h2::before{content:'★';color:#f091b0;font-size:13px;margin-right:5px;vertical-
 .acard:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(232,140,160,.28)}
 .card{transition:transform .15s,box-shadow .15s}
 .card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(232,140,160,.28)}
+.fpanel{background:#fff;border:2px solid #fbd9e2;border-radius:16px;padding:10px 14px 12px;margin:10px 0}
+.fpanel .fh{display:flex;justify-content:space-between;align-items:center;font-weight:800;color:#7c4457;font-size:14.5px}
+.fpanel .fcount{color:#e88ca0}
+.freset{border:1.5px solid #f0b9c9;background:#fff5f8;color:#b05777;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.frow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.frow .fl{font-size:12px;font-weight:800;color:#b05777;min-width:36px}
+.fchip{border:1.5px solid #f0b9c9;background:#fff;color:#7c4457;border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.fchip.on{background:var(--peach);border-color:var(--peach);color:#fff}
 .bdg{display:inline-block;border-radius:999px;padding:1px 9px;font-size:11.5px;font-weight:700;margin:0 4px 4px 0;border:1px solid}
 .bdg.c0{background:#f2f2f2;color:#666;border-color:#ccc}
 .bdg.c9{background:#f1ebfd;color:#6a4fb5;border-color:#d5c8f5}
@@ -263,21 +271,36 @@ function feedPage(){
   <ul class="hlist">${feed.map(({h,u})=>`<li><span class="small">${esc(u.date||'')}</span> ${linkHorse(h)} <span class="small">${esc(u.text||'')}</span></li>`).join('')}</ul>`;
 }
 
-let IDX_TAB = 'all';
-function itab(t, btn){
-  IDX_TAB = t;
-  document.querySelectorAll('.atabs button').forEach(b=>b.classList.toggle('on', b===btn));
+let IDX_F = {dec:'', sex:'', coat:'', crown:'', feat:''};
+function crownOf(name){ return name.startsWith('マテンロウ') ? 'マテンロウ' : name.startsWith('ディア') ? 'ディア' : 'その他'; }
+function fchip(g, v){
+  IDX_F[g] = (IDX_F[g]===v) ? '' : v;
+  document.querySelectorAll(`[data-fg="${g}"]`).forEach(b=>b.classList.toggle('on', IDX_F[g]!=='' && b.dataset.fv===IDX_F[g]));
+  if (window._drawIndex) window._drawIndex(document.getElementById('q') ? document.getElementById('q').value : '');
+}
+function freset(){
+  IDX_F = {dec:'', sex:'', coat:'', crown:'', feat:''};
+  document.querySelectorAll('.fchip').forEach(b=>b.classList.remove('on'));
   if (window._drawIndex) window._drawIndex(document.getElementById('q') ? document.getElementById('q').value : '');
 }
 
 function indexPage(filterYear){
-  const nAct = HORSES.filter(h=>h.active).length;
+  const chip = (g,v,l)=>`<button class="fchip${IDX_F[g]===v?' on':''}" data-fg="${g}" data-fv="${v}" onclick="fchip('${g}','${v}')">${l}</button>`;
   app.innerHTML = `<h1>全馬一覧</h1>
   <input class="search" id="q" placeholder="馬名・父・母・調教師で検索">
-  <div class="atabs"><button class="${IDX_TAB==='all'?'on':''}" onclick="itab('all',this)">すべて（${HORSES.length}）</button><button class="${IDX_TAB==='active'?'on':''}" onclick="itab('active',this)">現役（${nAct}）</button><button class="${IDX_TAB==='other'?'on':''}" onclick="itab('other',this)">引退・その他（${HORSES.length-nAct}）</button></div>
+  <div class="fpanel">
+    <div class="fh"><span>🎮 絞り込み</span><span class="fcount" id="fcount"></span><button class="freset" onclick="freset()">リセット</button></div>
+    <div class="frow"><span class="fl">年代</span>${chip('dec','202','2020年代')}${chip('dec','201','2010年代')}${chip('dec','200','2000年代')}${chip('dec','199','1990年代')}</div>
+    <div class="frow"><span class="fl">性別</span>${chip('sex','牡','牡')}${chip('sex','牝','牝')}${chip('sex','セン','セン')}</div>
+    <div class="frow"><span class="fl">毛色</span>${['鹿毛','黒鹿毛','栗毛','青鹿毛','芦毛','青毛'].map(c=>chip('coat',c,c)).join('')}</div>
+    <div class="frow"><span class="fl">冠名</span>${chip('crown','マテンロウ','マテンロウ')}${chip('crown','ディア','ディア')}${chip('crown','その他','その他')}</div>
+    <div class="frow"><span class="fl">実績</span>${chip('feat','graded','★重賞勝ち')}${chip('feat','win','勝ち馬')}${chip('feat','title','称号持ち')}</div>
+  </div>
   <div id="list"></div>`;
   const draw = (q)=>{
-    const list = HORSES.filter(h=>(IDX_TAB==='all' || (IDX_TAB==='active')===!!h.active) && (!q || (h.name+h.sire+h.dam+h.stable).includes(q)));
+    const okF = h => (!IDX_F.dec || (h.birth_year||'').startsWith(IDX_F.dec)) && (!IDX_F.sex || h.sex===IDX_F.sex) && (!IDX_F.coat || h.color===IDX_F.coat) && (!IDX_F.crown || crownOf(h.name)===IDX_F.crown) && (!IDX_F.feat || (IDX_F.feat==='graded' ? h.graded_wins.length>0 : IDX_F.feat==='win' ? h.wins>0 : (h.titles && h.titles.length>0)));
+    const list = HORSES.filter(h=>okF(h) && (!q || (h.name+h.sire+h.dam+h.stable).includes(q)));
+    const fc = document.getElementById('fcount'); if (fc) fc.textContent = `${list.length}頭 みつけた！`;
     const groups = {};
     list.forEach(h=>{ (groups[h.birth_year||'不明'] ||= []).push(h); });
     document.getElementById('list').innerHTML = Object.keys(groups).sort().reverse().map(y=>
