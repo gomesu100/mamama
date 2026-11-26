@@ -307,7 +307,7 @@ function ownerPage(){
   app.innerHTML = `<h1>寺田千代乃氏について</h1>
   ${profHtml}
   <h2>セリ購入の記録</h2>
-  <p class="small">セリで購入した所有馬を、購入年ごとにまとめています（シートに価格の記録がある${buys.length}頭）。総額 ${fmtMan(totalMan)}（外貨建てを除く）。購買者名が残っているものは、代理で落札した方の名前です。</p>
+  <p class="small">セリで購入した所有馬を、購入年ごとにまとめています。総額 ${fmtMan(totalMan)}（外貨建てを除く）。購買者名が残っているものは、代理で落札した方の名前です。</p>
   ${(()=>{ const asc = Object.keys(byYear).sort(); const totals = asc.map(y=>({y, n: byYear[y].length, t: byYear[y].reduce((a,b)=>a+(b.man||0),0)})); const mx = Math.max(...totals.map(x=>x.t)); return `<div class="barchart">${totals.map(x=>`<div class="bc-col"><div class="bc-val">${(x.t/10000).toFixed(1)}億</div><div class="bc-bar${x.t>=40000?' big':''}" style="height:${Math.max(3, Math.round(90*x.t/mx))}px"></div><div class="bc-yr">${x.y}</div><div class="bc-n">${x.n}頭</div></div>`).join('')}</div><p class="small">年ごとの購入総額（円建てのみ）。金色は4億円を超えた年。</p>`; })()}
   ${buyHtml}
   <h2>千代乃氏についての記事</h2>
