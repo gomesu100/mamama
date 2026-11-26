@@ -300,7 +300,7 @@ function indexPage(filterYear){
   const draw = (q)=>{
     const okF = h => (!IDX_F.dec || (h.birth_year||'').startsWith(IDX_F.dec)) && (!IDX_F.sex || h.sex===IDX_F.sex) && (!IDX_F.coat || h.color===IDX_F.coat) && (!IDX_F.crown || crownOf(h.name)===IDX_F.crown) && (!IDX_F.feat || (IDX_F.feat==='graded' ? h.graded_wins.length>0 : h.class_label===IDX_F.feat));
     const list = HORSES.filter(h=>okF(h) && (!q || (h.name+h.sire+h.dam+h.stable).includes(q)));
-    const fc = document.getElementById('fcount'); if (fc) fc.textContent = `${list.length}頭 みつけた！`;
+    const fc = document.getElementById('fcount'); if (fc) fc.textContent = `${list.length}頭該当`;
     const groups = {};
     list.forEach(h=>{ (groups[h.birth_year||'不明'] ||= []).push(h); });
     document.getElementById('list').innerHTML = Object.keys(groups).sort().reverse().map(y=>
