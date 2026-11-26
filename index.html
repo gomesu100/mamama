@@ -121,6 +121,12 @@ table.ped td.dup{box-shadow:inset 0 0 0 2px #f0a13c;border-radius:4px}
 .atabs{display:flex;gap:8px;margin:12px 0 2px;flex-wrap:wrap}
 .atabs button{font-family:inherit;font-size:13.5px;font-weight:700;color:#a03a5c;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:4px 16px;cursor:pointer}
 .atabs button.on{background:var(--peach);border-color:var(--peach);color:#fff}
+::selection{background:#fbd9e2}
+h2::before{content:'★';color:#f091b0;font-size:13px;margin-right:5px;vertical-align:2px}
+.acard{transition:transform .15s,box-shadow .15s}
+.acard:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(232,140,160,.28)}
+.card{transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(232,140,160,.28)}
 .bdg{display:inline-block;border-radius:999px;padding:1px 9px;font-size:11.5px;font-weight:700;margin:0 4px 4px 0;border:1px solid}
 .bdg.c0{background:#f2f2f2;color:#666;border-color:#ccc}
 .bdg.c9{background:#f1ebfd;color:#6a4fb5;border-color:#d5c8f5}
@@ -135,8 +141,8 @@ table.ped td.dup{box-shadow:inset 0 0 0 2px #f0a13c;border-radius:4px}
 ul.xlist{list-style:none;padding:0;margin:4px 0}
 ul.xlist li{padding:4px 2px;border-bottom:1px dashed #f3d9e2}
 .pedwrap{overflow-x:auto}
-.faceL{width:64px;height:64px;object-fit:cover;border-radius:50%;border:2.5px solid var(--line);vertical-align:-18px;margin-right:10px;background:#fff}
-.faceS{width:26px;height:26px;object-fit:cover;border-radius:50%;border:1.5px solid var(--line);vertical-align:-7px;margin-right:5px;background:#fff}
+.faceL{width:64px;height:64px;object-fit:cover;border-radius:50%;border:2.5px solid #f4a7bd;vertical-align:-18px;margin-right:10px;background:#fff}
+.faceS{width:26px;height:26px;object-fit:cover;border-radius:50%;border:1.5px solid #f4a7bd;vertical-align:-7px;margin-right:5px;background:#fff}
 .silkband.gold{border-color:#eec95c;background:linear-gradient(135deg,#fff9e0,#fdeef2);text-align:center;padding:16px 14px}
 .silkband.gold .t{font-size:21px;color:#8a6d00}
 .hofs{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-top:12px}
@@ -257,18 +263,28 @@ function feedPage(){
   <ul class="hlist">${feed.map(({h,u})=>`<li><span class="small">${esc(u.date||'')}</span> ${linkHorse(h)} <span class="small">${esc(u.text||'')}</span></li>`).join('')}</ul>`;
 }
 
+let IDX_TAB = 'all';
+function itab(t, btn){
+  IDX_TAB = t;
+  document.querySelectorAll('.atabs button').forEach(b=>b.classList.toggle('on', b===btn));
+  if (window._drawIndex) window._drawIndex(document.getElementById('q') ? document.getElementById('q').value : '');
+}
+
 function indexPage(filterYear){
+  const nAct = HORSES.filter(h=>h.active).length;
   app.innerHTML = `<h1>全馬一覧</h1>
   <input class="search" id="q" placeholder="馬名・父・母・調教師で検索">
+  <div class="atabs"><button class="${IDX_TAB==='all'?'on':''}" onclick="itab('all',this)">すべて（${HORSES.length}）</button><button class="${IDX_TAB==='active'?'on':''}" onclick="itab('active',this)">現役（${nAct}）</button><button class="${IDX_TAB==='other'?'on':''}" onclick="itab('other',this)">引退・その他（${HORSES.length-nAct}）</button></div>
   <div id="list"></div>`;
   const draw = (q)=>{
-    const list = HORSES.filter(h=>!q || (h.name+h.sire+h.dam+h.stable).includes(q));
+    const list = HORSES.filter(h=>(IDX_TAB==='all' || (IDX_TAB==='active')===!!h.active) && (!q || (h.name+h.sire+h.dam+h.stable).includes(q)));
     const groups = {};
     list.forEach(h=>{ (groups[h.birth_year||'不明'] ||= []).push(h); });
     document.getElementById('list').innerHTML = Object.keys(groups).sort().reverse().map(y=>
       `<h2>${esc(y)}年生（${groups[y].length}頭）</h2><ul class="hlist">` +
       groups[y].map(h=>`<li>${faceImg(h)}${linkHorse(h)} <span class="small">${esc(h.sex)}・父${esc(h.sire)}・${esc(h.stable)}・${h.starts}戦${h.wins}勝・${esc(statusOf(h))}</span></li>`).join('') + `</ul>`).join('');
   };
+  window._drawIndex = draw;
   draw('');
   document.getElementById('q').addEventListener('input', e=>draw(e.target.value));
 }
