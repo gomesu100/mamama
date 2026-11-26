@@ -283,11 +283,12 @@ function ownerPage(){
   const fmtMan = n => n>=10000 ? `${Math.floor(n/10000)}億${n%10000? (n%10000).toLocaleString()+'万' : ''}円` : `${n.toLocaleString()}万円`;
   const buys = [];
   HORSES.forEach(h=>{ const s = h.sale||''; const m = /^(.+?)\((\d{4})年\s*(.+)\)$/.exec(s); if(!m) return; let man = null; const em = /^([0-9,]+)億(?:([0-9,]+)万)?円/.exec(m[1]); if(em) man = parseInt(em[1].replace(/,/g,''))*10000 + (em[2]? parseInt(em[2].replace(/,/g,'')) : 0); else { const pm = /^([0-9,]+)万円/.exec(m[1]); if(pm) man = parseInt(pm[1].replace(/,/g,'')); } buys.push({h, price:m[1], year:m[2], rest:m[3], man}); });
+  [['ミスフーバフーバの2014','2,376万円(2014年 セレクトセール 上場No.457 購買者:寺田千代乃)'],['スウィートアンドセイヴォリーの2016','4,320万円(2016年 セレクトセール 上場No.467 購買者:寺田千代乃)'],['バージニアキャットの2016','2,052万円(2016年 セレクトセール 上場No.501 購買者:寺田千代乃)'],['プリンセスロック23','5,800万円(2023年 セレクトセール 上場No.365)']].forEach(([nm, s])=>{ const m = /^(.+?)\((\d{4})年\s*(.+)\)$/.exec(s); if(!m) return; let man = null; const pm = /^([0-9,]+)万円/.exec(m[1]); if(pm) man = parseInt(pm[1].replace(/,/g,'')); buys.push({h:null, nm, price:m[1], year:m[2], rest:m[3], man}); });
   const byYear = {}; buys.forEach(b=>{ (byYear[b.year] ||= []).push(b); });
   const years = Object.keys(byYear).sort().reverse();
   const totalMan = buys.reduce((a,b)=>a+(b.man||0), 0);
   const buyHtml = years.map(y=>{ const bs = byYear[y].slice().sort((a,b)=>(b.man||0)-(a.man||0)); const ym = bs.reduce((a,b)=>a+(b.man||0), 0); const fx = bs.filter(b=>!b.man).length;
-    return `<div class="subh">${y}年（${bs.length}頭）</div><ul class="hlist">${bs.map(b=>`<li>${linkHorse(b.h)} <span class="small">${esc(b.rest)} ￥${esc(b.price)}</span></li>`).join('')}</ul><p class="small">${y}年 合計 ${fmtMan(ym)}${fx?`（＋外貨建て${fx}件）`:''}</p>`; }).join('');
+    return `<div class="subh">${y}年（${bs.length}頭）</div><ul class="hlist">${bs.map(b=>`<li>${b.h? linkHorse(b.h) : esc(b.nm)+'<span class="small">（未登録）</span>'} <span class="small">${esc(b.rest)} ￥${esc(b.price)}</span></li>`).join('')}</ul><p class="small">${y}年 合計 ${fmtMan(ym)}${fx?`（＋外貨建て${fx}件）`:''}</p>`; }).join('');
   const JRAVp = ['札幌','函館','福島','新潟','東京','中山','中京','京都','阪神','小倉'];
   const pWins = HORSES.reduce((a,h)=>a+h.wins,0);
   const pJra = HORSES.reduce((a,h)=>a+h.races.filter(r=>r.fin==='1'&&JRAVp.includes(r.place)).length,0);
