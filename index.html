@@ -294,11 +294,11 @@ function indexPage(filterYear){
     <div class="frow"><span class="fl">性別</span>${chip('sex','牡','牡')}${chip('sex','牝','牝')}${chip('sex','セン','セン')}</div>
     <div class="frow"><span class="fl">毛色</span>${['鹿毛','黒鹿毛','栗毛','青鹿毛','芦毛','青毛'].map(c=>chip('coat',c,c)).join('')}</div>
     <div class="frow"><span class="fl">冠名</span>${chip('crown','マテンロウ','マテンロウ')}${chip('crown','ディア','ディア')}${chip('crown','その他','その他')}</div>
-    <div class="frow"><span class="fl">実績</span>${chip('feat','graded','★重賞勝ち')}${chip('feat','win','勝ち馬')}${chip('feat','title','称号持ち')}</div>
+    <div class="frow"><span class="fl">クラス</span>${chip('feat','graded','★重賞勝ち')}${chip('feat','オープン','オープン')}${chip('feat','3勝クラス','3勝クラス')}${chip('feat','2勝クラス','2勝クラス')}${chip('feat','1勝クラス','1勝クラス')}${chip('feat','未勝利','未勝利')}${chip('feat','未出走','未出走')}${chip('feat','地方（園田）','地方')}</div>
   </div>
   <div id="list"></div>`;
   const draw = (q)=>{
-    const okF = h => (!IDX_F.dec || (h.birth_year||'').startsWith(IDX_F.dec)) && (!IDX_F.sex || h.sex===IDX_F.sex) && (!IDX_F.coat || h.color===IDX_F.coat) && (!IDX_F.crown || crownOf(h.name)===IDX_F.crown) && (!IDX_F.feat || (IDX_F.feat==='graded' ? h.graded_wins.length>0 : IDX_F.feat==='win' ? h.wins>0 : (h.titles && h.titles.length>0)));
+    const okF = h => (!IDX_F.dec || (h.birth_year||'').startsWith(IDX_F.dec)) && (!IDX_F.sex || h.sex===IDX_F.sex) && (!IDX_F.coat || h.color===IDX_F.coat) && (!IDX_F.crown || crownOf(h.name)===IDX_F.crown) && (!IDX_F.feat || (IDX_F.feat==='graded' ? h.graded_wins.length>0 : h.class_label===IDX_F.feat));
     const list = HORSES.filter(h=>okF(h) && (!q || (h.name+h.sire+h.dam+h.stable).includes(q)));
     const fc = document.getElementById('fcount'); if (fc) fc.textContent = `${list.length}頭 みつけた！`;
     const groups = {};
