@@ -118,6 +118,9 @@ table.ped td.dup{box-shadow:inset 0 0 0 2px #f0a13c;border-radius:4px}
 .acards{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:10px;margin-top:10px}
 .acard{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;box-shadow:var(--shadow)}
 .acard .meta{font-size:12px;color:var(--sub);margin-top:4px;line-height:1.65}
+.atabs{display:flex;gap:8px;margin:12px 0 2px;flex-wrap:wrap}
+.atabs button{font-family:inherit;font-size:13.5px;font-weight:700;color:#a03a5c;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:4px 16px;cursor:pointer}
+.atabs button.on{background:var(--peach);border-color:var(--peach);color:#fff}
 .bdg{display:inline-block;border-radius:999px;padding:1px 9px;font-size:11.5px;font-weight:700;margin:0 4px 4px 0;border:1px solid}
 .bdg.c0{background:#f2f2f2;color:#666;border-color:#ccc}
 .bdg.c9{background:#f1ebfd;color:#6a4fb5;border-color:#d5c8f5}
@@ -220,13 +223,21 @@ function home(){
   <h2>世代から探す</h2><p>${years.map(y=>`<a class="tag" href="#/index">${y}年生</a>`).join(' ')}</p>`;
 }
 
+function atab(t, btn){
+  document.querySelectorAll('.atabs button').forEach(b=>b.classList.toggle('on', b===btn));
+  document.querySelectorAll('.acard').forEach(c=>{ c.style.display = (t==='all' || c.dataset.st===t) ? '' : 'none'; });
+}
+
 function activePage(){
   const rank = {'オープン':0, '3勝クラス':1, '2勝クラス':2, '1勝クラス':3, '未勝利':4, '地方（園田）':5, '未出走':6};
   const list = HORSES.filter(h=>h.active).slice().sort((a,b)=>(rank[a.class_label]-rank[b.class_label]) || (b.birth_year||'').localeCompare(a.birth_year||'') || b.id.localeCompare(a.id));
   const cls = c => c==='オープン' ? 'op' : c==='3勝クラス' ? 'c3' : c==='2勝クラス' ? 'c2' : c==='1勝クラス' ? 'c1' : c==='未出走' ? 'c9' : 'c0';
+  const nIn = list.filter(h=>h.stable_status==='在厩'||h.stable_status==='地方在厩').length;
+  const nOut = list.filter(h=>h.stable_status==='放牧').length;
   app.innerHTML = `<h1>現役馬（${list.length}頭）</h1>
   <p class="small">中央登録馬と、地方で現役の馬の一覧です。クラスは最近のレースの格付けから見た「今戦っているクラス」です（クラス戦で勝った場合は1つ上がった先を表示）。放牧・在厩の表示は、JRA公式で確認できた分だけ付けています。</p>
-  <div class="acards">${list.map(h=>`<div class="acard">
+  <div class="atabs"><button class="on" onclick="atab('all',this)">全頭（${list.length}）</button><button onclick="atab('in',this)">入厩中（${nIn}）</button><button onclick="atab('out',this)">放牧中（${nOut}）</button></div>
+  <div class="acards">${list.map(h=>`<div class="acard" data-st="${h.stable_status==='放牧'?'out':(h.stable_status==='在厩'||h.stable_status==='地方在厩')?'in':''}">
     <div>${faceImg(h)}${linkHorse(h)}</div>
     <div style="margin-top:6px">${h.class_label==='オープン'?`<span class="bdg op">OP オープン</span>`:`<span class="bdg ${cls(h.class_label)}">${esc(h.class_label)}</span>`}${h.stable_status==='放牧'?`<span class="bdg houmoku">放牧中</span>`:h.stable_status==='在厩'?`<span class="bdg zaikyu">在厩</span>`:h.stable_status==='地方在厩'?`<span class="bdg zaikyu">地方在厩</span>`:''}${h.graded_wins.length?`<span class="bdg gold">★重賞勝ち</span>`:''}</div>
     <div class="meta">${esc(h.birth_year)}年生・${esc(h.sex)}・${esc(h.stable)}<br>父 ${esc(h.sire)}<br>${h.starts}戦${h.wins}勝${h.last_race?`<br>前走 ${esc(h.last_race.date)} ${esc(h.last_race.race)}（${esc(h.last_race.fin)}着）`:'<br>未出走'}</div>
