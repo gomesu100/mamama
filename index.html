@@ -390,6 +390,7 @@ function horsePage(id){
     <tr><th>性別</th><td>${esc(dash(h.sex))}</td></tr>
     <tr><th>生年月日</th><td>${esc(dash(h.birth))}</td></tr>
     <tr><th>毛色</th><td>${esc(dash(h.color))}</td></tr>
+    ${row('馬名由来', esc(dash(h.origin)))}
     ${hkName?`<tr><th>香港名</th><td>${esc(hkName)}</td></tr>`:''}
     <tr><th>厩舎</th><td><a href="#/trainer/${encodeURIComponent(h.stable)}">${esc(dash(h.stable))}</a></td></tr>
     <tr><th>父</th><td><a href="#/sire/${encodeURIComponent(h.sire)}">${esc(dash(h.sire))}</a></td></tr>
@@ -411,7 +412,6 @@ function horsePage(id){
   </div>
   ${h.lead_intro?`<h2 class="foldh" onclick="foldT(this)">誘導馬紹介 <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><div class="scrap"><div class="src">${esc(h.lead_intro.course)}の誘導馬（${esc(h.lead_intro.debut)}デビュー）</div>${h.lead_intro.catch?`<p><b>${esc(h.lead_intro.catch)}</b></p>`:''}<p>${esc(h.lead_intro.text)}</p>${h.lead_intro.wins?`<p class="small">主な勝ち鞍・成績等：${esc(h.lead_intro.wins)}</p>`:''}<p class="small">出典：JRA公式・誘導馬紹介ページ</p></div></div>`:''}
   ${h.lead_record?`<h2 class="foldh" onclick="foldT(this)">誘導記録（阪神競馬場・${h.lead_record.length}日） <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><div class="racewrap"><table class="races"><tr><th>日付</th><th>担当</th><th>千代乃所有馬</th></tr>${h.lead_record.map(d=>`<tr><td>${esc(d.disp)}${d.note?` <span class="small">${esc(d.note)}</span>`:''}</td><td>${esc(d.label)}</td><td>${d.led.length?`<span class="momostar">★</span> ${d.led.map(l=>`<a href="#/horse/${l.id}">${esc(l.name)}</a> <span class="small">${esc(l.rnd)}R ${esc(l.race)}（${esc(l.fin)}着）</span>`).join('、')}`:'<span class="small">出走なし</span>'}</td></tr>`).join('')}</table></div><p class="small">出典：JRA公式X「今週の誘導馬」発表ほか。★は千代乃所有馬が出走し、オリオンが誘導した日。</p></div>`:''}
-  <h2>馬名由来</h2><p>${esc(dash(h.origin))}</p>
   ${(h.career_disp && (h.career_disp.includes('→') || h.career_disp.includes('（馬主'))) ? `<h2 class="foldh" onclick="foldT(this)">経歴 <span class="farr">ひらく ▾</span></h2><div class="foldbody" style="display:none"><p>${esc(h.career_disp)}</p></div>` : ''}
   ${prodHtml}
   ${rkHtml}
