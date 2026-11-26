@@ -197,7 +197,7 @@ ul.xlist li{padding:4px 2px;border-bottom:1px dashed #f3d9e2}
 <header class="site">
   <div class="title"><a href="#/">千代乃所有馬Wiki</a></div>
   <nav class="main">
-    <a href="#/">トップ</a><span class="hasdrop"><button class="dropbtn" type="button">馬 ▾</button><span class="drop"><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">データ ▾</button><span class="drop"><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/bonds">絆</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">読み物 ▾</button><span class="drop"><a href="#/feed">近況</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a><a href="#/owner">千代乃氏について</a></span></span>
+    <a href="#/">トップ</a><span class="hasdrop"><button class="dropbtn" type="button">馬 ▾</button><span class="drop"><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">データ ▾</button><span class="drop"><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/titles">称号一覧</a><a href="#/bonds">絆</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">読み物 ▾</button><span class="drop"><a href="#/feed">近況</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a><a href="#/owner">千代乃氏について</a></span></span>
   </nav>
 </header>
 <main id="app"></main>
@@ -704,6 +704,15 @@ function bondsPage(){
   <ul class="hlist">${BOND_ORDER.map(k=>{ const st=bondPairs(k); return st.pairs?`<li><a class="tbadge blue" href="#/bond/${encodeURIComponent(k)}">${BOND_ICON[k]||'💞'} ${esc(k)}</a> <span class="small">${st.pairs}組・${st.horses}頭</span></li>`:''; }).join('')}</ul>
   <p class="small">各馬ページの絆バッジからも、その絆のペア一覧へ飛べます。</p>`;
 }
+function titlesPage(){
+  const m = {};
+  HORSES.forEach(h=>(h.titles||[]).forEach(t=>{ const k = t.key||t.text; const e = (m[k] ||= {key:k, icon:t.icon, text:(t.key? k : t.text), tier:t.tier, hs:new Set()}); e.hs.add(h.id); }));
+  const groups = [['gold','金の称号'],['pink','ピンクの称号'],['blue','青の称号']];
+  app.innerHTML = `<div class="silkband"><div class="t">★ 称号一覧 ★</div><div class="s">全${Object.keys(m).length}種・色はレア度のおおよその目安（金→ピンク→青）</div></div>` +
+  groups.map(([tier, label])=>{ const es = Object.values(m).filter(e=>e.tier===tier).sort((a,b)=> a.hs.size-b.hs.size || a.text.localeCompare(b.text,'ja')); if(!es.length) return '';
+    return `<h2>${label}（${es.length}種）</h2><div class="titles">${es.map(e=>`<a class="tbadge ${e.tier}" href="#/title/${encodeURIComponent(e.key)}">${e.icon} ${esc(e.text)}</a> <span class="small">${e.hs.size}頭</span>`).join(' ')}</div>`; }).join('') +
+  `<p class="small">称号バッジを押すと、その称号を持つ馬の一覧へ飛べます。頭数が少ない順に並んでいます。</p>`;
+}
 function titlePage(key){
   if(key==='初勝利'){
     const pairs = HORSES.flatMap(h=>(h.titles||[]).filter(t=>(t.key||t.text)===key).map(t=>({h, t})));
@@ -796,6 +805,7 @@ function route(){
   else if(page==='graded') gradedPage();
   else if(page==='jockeys') jockeysPage();
   else if(page==='rivals') rivalsPage();
+  else if(page==='titles') titlesPage();
   else if(page==='title') titlePage(decodeURIComponent(parts.slice(1).join('/')));
   else if(page==='bond') bondPage(decodeURIComponent(parts.slice(1).join('/')));
   else if(page==='bonds') bondsPage();
