@@ -273,7 +273,19 @@ function activePage(){
 
 function ownerPage(){
   const oa = (EXTRA.ownerarts||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  app.innerHTML = `<h1>千代乃氏についての記事</h1>
+  const fmtMan = n => n>=10000 ? `${Math.floor(n/10000)}億${n%10000? (n%10000).toLocaleString()+'万' : ''}円` : `${n.toLocaleString()}万円`;
+  const buys = [];
+  HORSES.forEach(h=>{ const s = h.sale||''; const m = /^(.+?)\((\d{4})年\s*(.+)\)$/.exec(s); if(!m) return; const pm = /^([0-9,]+)万円/.exec(m[1]); buys.push({h, price:m[1], year:m[2], rest:m[3], man: pm? parseInt(pm[1].replace(/,/g,'')) : null}); });
+  const byYear = {}; buys.forEach(b=>{ (byYear[b.year] ||= []).push(b); });
+  const years = Object.keys(byYear).sort().reverse();
+  const totalMan = buys.reduce((a,b)=>a+(b.man||0), 0);
+  const buyHtml = years.map(y=>{ const bs = byYear[y].slice().sort((a,b)=>(b.man||0)-(a.man||0)); const ym = bs.reduce((a,b)=>a+(b.man||0), 0); const fx = bs.filter(b=>!b.man).length;
+    return `<div class="subh">${y}年（${bs.length}頭）</div><ul class="hlist">${bs.map(b=>`<li>${linkHorse(b.h)} <span class="small">${esc(b.rest)} ￥${esc(b.price)}</span></li>`).join('')}</ul><p class="small">${y}年 合計 ${fmtMan(ym)}${fx?`（＋外貨建て${fx}件）`:''}</p>`; }).join('');
+  app.innerHTML = `<h1>寺田千代乃氏について</h1>
+  <h2>セリ購入の記録</h2>
+  <p class="small">セリで購入した所有馬を、購入年ごとにまとめています（シートに価格の記録がある${buys.length}頭）。総額 ${fmtMan(totalMan)}（外貨建てを除く）。購買者名が残っているものは、代理で落札した方の名前です。</p>
+  ${buyHtml}
+  <h2>千代乃氏についての記事</h2>
   <p class="small">寺田千代乃氏ご本人を取り上げた記事・インタビュー・コラムを、新しい順に並べています（全${oa.length}件）。</p>
   ${oa.map(s=>`<div class="scrap"><div class="src">${esc(s.date||'')} ・ ${esc(s.source||'')}</div><p>${s.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||'記事を読む')}</a>`:`<b>${esc(s.title||'')}</b>`}</p>${s.note?`<p class="small">${esc(s.note)}</p>`:''}</div>`).join('')}`;
 }
