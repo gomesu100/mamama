@@ -168,7 +168,7 @@ ul.xlist li{padding:4px 2px;border-bottom:1px dashed #f3d9e2}
 <header class="site">
   <div class="title"><a href="#/">千代乃所有馬Wiki</a></div>
   <nav class="main">
-    <a href="#/">トップ</a><span class="hasdrop"><button class="dropbtn" type="button">馬 ▾</button><span class="drop"><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">データ ▾</button><span class="drop"><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">読み物 ▾</button><span class="drop"><a href="#/feed">近況</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a><a href="#/owner">千代乃氏について</a></span></span>
+    <a href="#/">トップ</a><span class="hasdrop"><button class="dropbtn" type="button">馬 ▾</button><span class="drop"><a href="#/index">全馬一覧</a><a href="#/active">現役馬</a><a href="#/graded">重賞勝ち馬</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">データ ▾</button><span class="drop"><a href="#/jockeys">騎手</a><a href="#/rivals">対戦馬</a><a href="#/together">同時出走</a><a href="#/bonds">絆</a><a href="#/families">牝系（FNo）</a><a href="#/trainers">調教師</a></span></span><span class="hasdrop"><button class="dropbtn" type="button">読み物 ▾</button><span class="drop"><a href="#/feed">近況</a><a href="#/calendar">カレンダー</a><a href="#/chronicle">クロニクル</a><a href="#/owner">千代乃氏について</a></span></span>
   </nav>
 </header>
 <main id="app"></main>
@@ -323,7 +323,7 @@ function horsePage(id){
   ${kinHtml}
   ${sireKids.length?`<h2>同じ父の所有馬</h2><p class="small">${sireKids.map(s=>linkHorse(s)).join('、')}</p>`:''}
   ${pedSection(h)}
-  ${(h.bonds||[]).length?`<h2>絆</h2><ul class="hlist">${h.bonds.map(b=>{const p=byId[b.to]; return p?`<li><span class="tbadge blue">${esc(b.label)}</span> ${linkHorse(p)}${b.note?` <span class="small">${esc(b.note)}</span>`:''}</li>`:'';}).join('')}</ul>`:''}
+  ${(h.bonds||[]).length?`<h2>絆</h2><ul class="hlist">${h.bonds.map(b=>{const p=byId[b.to]; return p?`<li><a class="tbadge blue" href="#/bond/${encodeURIComponent(b.label)}">${BOND_ICON[b.label]||'💞'} ${esc(b.label)}</a> ${linkHorse(p)}${b.note?` <span class="small">${esc(b.note)}</span>`:''}</li>`:'';}).join('')}</ul>`:''}
   ${(()=>{ const rivals = Object.entries(EXTRA.opp).map(([name, meets])=>{ const ms = meets.filter(m=>m.horse_id===h.id); if(ms.length<2) return null; let a=0,b=0; ms.forEach(m=>{ const x=parseInt(m.own_fin), y=parseInt(m.opp_fin); if(!isNaN(x)&&!isNaN(y)){ if(x<y) a++; else if(x>y) b++; } }); return {name, n: ms.length, a, b}; }).filter(Boolean).sort((x,y)=>y.n-x.n || x.name.localeCompare(y.name,'ja')).slice(0,5); return rivals.length?`<h2>よく対戦した馬</h2><ul class="hlist">${rivals.map(r=>`<li><a href="#/opp/${encodeURIComponent(r.name)}">${esc(r.name)}</a> <span class="small">対戦${r.n}回（${esc(h.name)}の先着${r.a}回／後着${r.b}回）</span></li>`).join('')}</ul>`:''; })()}
   <h2>戦績（${h.races.length}件）</h2>
   <div class="racewrap"><table class="races"><tr><th>日付</th><th>場所</th><th>R</th><th>レース名</th><th>グレード</th><th>コース</th><th>着順</th><th>騎手</th><th>賞金</th></tr>
@@ -551,6 +551,27 @@ function gradedPage(){
   <p class="small">※重賞はグレード競走（G・Jpn）のみ。リステッドは含みません。</p>`;
 }
 
+const BOND_ICON = {'運命の相手':'💫','隣のゲート':'🚪','併せ馬の相手':'🏇','誘導馬の縁':'⭐','誘導した相手':'⭐','デビュー同期':'🐣','同じ誕生日':'🎂','同じ競馬場で同日勝利':'🏆','同じ日に勝利':'🌟','厩舎の同期':'🏠','好敵手':'⚔️','同時出走':'🎽'};
+const BOND_ORDER = ['運命の相手','隣のゲート','併せ馬の相手','誘導馬の縁','誘導した相手','デビュー同期','同じ誕生日','同じ競馬場で同日勝利','同じ日に勝利','厩舎の同期','好敵手','同時出走'];
+function bondPairs(key){
+  const seen = new Set(); let pairs = 0; const hs = new Set();
+  HORSES.forEach(h=>(h.bonds||[]).filter(b=>b.label===key).forEach(b=>{ hs.add(h.id); hs.add(b.to); const k=[h.id,b.to].sort().join('|'); if(!seen.has(k)){ seen.add(k); pairs++; } }));
+  return {pairs, horses: hs.size};
+}
+function bondPage(key){
+  const entries = HORSES.flatMap(h=>(h.bonds||[]).filter(b=>b.label===key).map(b=>({h, b}))).sort((x,y)=>String(x.b.note).localeCompare(String(y.b.note)) || x.h.id.localeCompare(y.h.id));
+  const st = bondPairs(key);
+  app.innerHTML = `<div class="silkband"><div class="t">★ 絆：${esc(key)} ★</div><div class="s">${BOND_ICON[key]||'💞'} この絆のペア：${st.pairs}組・${st.horses}頭</div></div>
+  <ul class="hlist">${entries.map(({h, b})=>{ const p=byId[b.to]; return p?`<li>${linkHorse(h)} <span class="tbadge blue">${BOND_ICON[key]||'💞'} ${esc(key)}</span> ${linkHorse(p)}${b.note?` <span class="small">${esc(b.note)}</span>`:''}</li>`:''; }).join('')}</ul>
+  <p class="small">絆バッジを押すと、その絆のペア一覧へ飛べます。<a href="#/bonds">絆の一覧</a></p>`;
+}
+function bondsPage(){
+  const total = HORSES.reduce((n,h)=>n+(h.bonds||[]).length,0);
+  const nh = HORSES.filter(h=>(h.bonds||[]).length).length;
+  app.innerHTML = `<div class="silkband"><div class="t">★ 絆 ★</div><div class="s">血統では見えない、拾いにくい繋がりだけを集めた記録：全${total}件・${nh}頭</div></div>
+  <ul class="hlist">${BOND_ORDER.map(k=>{ const st=bondPairs(k); return st.pairs?`<li><a class="tbadge blue" href="#/bond/${encodeURIComponent(k)}">${BOND_ICON[k]||'💞'} ${esc(k)}</a> <span class="small">${st.pairs}組・${st.horses}頭</span></li>`:''; }).join('')}</ul>
+  <p class="small">各馬ページの絆バッジからも、その絆のペア一覧へ飛べます。</p>`;
+}
 function titlePage(key){
   if(key==='初勝利'){
     const pairs = HORSES.flatMap(h=>(h.titles||[]).filter(t=>(t.key||t.text)===key).map(t=>({h, t})));
@@ -644,6 +665,8 @@ function route(){
   else if(page==='jockeys') jockeysPage();
   else if(page==='rivals') rivalsPage();
   else if(page==='title') titlePage(decodeURIComponent(parts.slice(1).join('/')));
+  else if(page==='bond') bondPage(decodeURIComponent(parts.slice(1).join('/')));
+  else if(page==='bonds') bondsPage();
   else if(page==='jockey') jockeyPage(decodeURIComponent(parts.slice(1).join('/')));
   else if(page==='together') togetherPage();
   else if(page==='families') familiesPage();
