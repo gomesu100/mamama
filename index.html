@@ -32,7 +32,9 @@ h1{font-size:26px;font-weight:800;border-bottom:3px dotted var(--peach);padding-
 .enname::after{content:'★';font-style:normal;font-size:12px;color:#f4a7bd;margin-left:9px;vertical-align:2px}
 .titles{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
 .rkstats{display:inline-block;background:#fff0f5;border:1.5px dashed #e79ec0;color:#a04a78;border-radius:999px;padding:4px 14px;font-weight:700;margin:2px 0 8px}
-.tbadge{border-radius:999px;padding:3px 12px;font-weight:700;font-size:13.5px;box-shadow:var(--shadow);display:inline-block;text-decoration:none;transition:.15s}
+.tbadge{border-radius:999px;padding:2px 9px;font-weight:700;font-size:12px;box-shadow:var(--shadow);display:inline-block;text-decoration:none;transition:.15s}
+.titles .tnote{display:none}
+.titles{gap:5px}
 a.tbadge:hover{transform:translateY(-1px);filter:brightness(1.04)}
 .tbadge .tnote{font-weight:400;font-size:11.5px;opacity:.85;margin-left:2px}
 .tbadge.gold{background:linear-gradient(135deg,#ffedb0,#f7c948);color:#6b4e00;border:1.5px solid #dfa914}
@@ -403,7 +405,7 @@ function horsePage(id){
     ${(h.note_disp && h.note_disp!=='-' && h.note_disp!=='現役') ? `<tr><th>備考</th><td>${esc(h.note_disp)}</td></tr>` : `<tr><th>現況</th><td>${esc(statusOf(h))}</td></tr>`}
     ${row('中央抹消日', h.jra_out)}${row('地方抹消日', h.nar_out)}
   </table>
-  ${(h.titles||[]).length?`<div class="titles">${h.titles.map(t=>`<a class="tbadge ${t.tier}" href="#/title/${encodeURIComponent(t.key||t.text)}">${t.icon} ${esc(t.text)}${t.note?` <span class="tnote">${esc(t.note)}</span>`:''}</a>`).join('')}</div>`:''}
+  ${(h.titles||[]).length?`<div class="titles">${h.titles.map(t=>`<a class="tbadge ${t.tier}" href="#/title/${encodeURIComponent(t.key||t.text)}"${t.note?` title="${esc(t.note)}"`:''}>${t.icon} ${esc(t.text)}${t.note?` <span class="tnote">${esc(t.note)}</span>`:''}</a>`).join('')}</div>`:''}
   ${h.graded && h.graded.length?`<div class="gbox"><div class="t">★ 重賞勝ち ★</div><ul>${h.graded.map(g=>`<li>${esc(g.date)} ${esc(g.place)} ${g.full?`<a href="#/race/${encodeURIComponent(g.rid)}"><b>${esc(g.race)}</b></a>`:`<b>${esc(g.race)}</b>`}${gpillHtml(g.grade)}${g.jockey?` <span class="small">${esc(g.jockey)}騎手</span>`:''}${g.rec?' ⏱レコード':''}${(EXTRA.videos||{})[g.rid]?` <a class="vidpill" href="${esc((EXTRA.videos||{})[g.rid])}" target="_blank" rel="noopener" title="レース映像を見る">🎥</a>`:''}</li>`).join('')}</ul></div>`:''}
   <div class="nowbox"><div class="t">近況</div>
   ${h.last_race?`<div>最終出走：${esc(h.last_race.date)} ${esc(h.last_race.place)} ${esc(h.last_race.race)}（${esc(h.last_race.fin)}着）</div>`:`<div>${h.races.length?'出走記録なし':'未出走'}</div>`}
