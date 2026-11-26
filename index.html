@@ -288,7 +288,9 @@ function ownerPage(){
   const byYear = {}; buys.forEach(b=>{ (byYear[b.year] ||= []).push(b); });
   const years = Object.keys(byYear).sort().reverse();
   const totalMan = buys.reduce((a,b)=>a+(b.man||0), 0);
-  const buyHtml = years.map(y=>{ const bs = byYear[y].slice().sort((a,b)=>(b.man||0)-(a.man||0)); const ym = bs.reduce((a,b)=>a+(b.man||0), 0); const fx = bs.filter(b=>!b.man).length;
+  const saleKey = b => { const m = /^(.*?)( 上場No\.\d+)?( 購買者:.*)?$/.exec(b.rest || ''); return m? m[1] : (b.rest || ''); };
+  const hipOf = b => { const m = /上場No\.(\d+)/.exec(b.rest || ''); return m? +m[1] : null; };
+  const buyHtml = years.map(y=>{ const bs = byYear[y].slice().sort((a,b)=>{ const ka = saleKey(a), kb = saleKey(b); if(ka !== kb) return ka < kb? -1 : 1; const ha = hipOf(a), hb = hipOf(b); if(ha != null && hb != null) return ha - hb; if(ha != null) return -1; if(hb != null) return 1; return (b.man||0) - (a.man||0); }); const ym = bs.reduce((a,b)=>a+(b.man||0), 0); const fx = bs.filter(b=>!b.man).length;
     return `<div class="subh">${y}年（${bs.length}頭）</div><ul class="hlist">${bs.map(b=>`<li>${b.h? linkHorse(b.h) : esc(b.nm)+'<span class="small">（未登録）</span>'} <span class="small">${esc(b.rest)} ￥${esc(b.price)}</span>${saleIcons(b.h? b.h.sale_links : b.sl)}</li>`).join('')}</ul><p class="small">${y}年 合計 ${fmtMan(ym)}${fx?`（＋外貨建て${fx}件）`:''}</p>`; }).join('');
   const JRAVp = ['札幌','函館','福島','新潟','東京','中山','中京','京都','阪神','小倉'];
   const pWins = HORSES.reduce((a,h)=>a+h.wins,0);
