@@ -562,19 +562,42 @@ function bondPairs(key){
 function bondPage(key){
   const labs = bondLabels(key);
   const entries = HORSES.flatMap(h=>(h.bonds||[]).filter(b=>labs.includes(b.label)).map(b=>({h, b})));
-  const groups = {};
-  entries.forEach(e=>{ const k=[e.h.id, e.b.to].sort().join('|'); (groups[k] ||= []).push(e); });
-  const blocks = Object.values(groups).map(g=>{
-    let A, B;
-    if(labs.length > 1){ const led = g.find(({b})=>b.label==='誘導馬の縁') || g[0]; A = led.h; B = byId[led.b.to]; }
-    else { const ids = [g[0].h.id, g[0].b.to].sort(); A = byId[ids[0]]; B = byId[ids[1]]; }
-    const src = labs.length > 1 ? g.filter(({b})=>b.label==='誘導馬の縁') : g;
-    const notes = [...new Set(src.map(({b})=>b.note).filter(Boolean))].sort();
-    return {A, B, notes};
-  }).sort((x,y)=>String(x.notes[0]||'').localeCompare(String(y.notes[0]||'')) || x.A.id.localeCompare(y.A.id));
+  const GROUPABLE = ['デビュー同期','同じ誕生日','同じ日に勝利','同じ競馬場で同日勝利','厩舎の同期'];
+  const gkey = b=>{
+    if(b.label==='厩舎の同期' || b.label==='同じ誕生日') return b.label+'|'+b.note;
+    const m = String(b.note).match(/^\d{4}\/\d{2}\/\d{2}/);
+    return m ? b.label+'|'+m[0] : null;
+  };
+  const units = {};
+  entries.forEach(({h, b})=>{
+    const pk = [h.id, b.to].sort().join('|');
+    const gk = GROUPABLE.includes(b.label) ? gkey(b) : null;
+    const uk = pk + '@' + (gk || '');
+    (units[uk] ||= {members: new Set(), notes: new Set(), gk, pk});
+    units[uk].members.add(h.id); units[uk].members.add(b.to);
+    if(b.note && !(labs.length > 1 && b.label==='誘導した相手')) units[uk].notes.add(b.note);
+  });
+  const byGroup = {};
+  Object.values(units).forEach(u=>{ if(u.gk) (byGroup[u.gk] ||= []).push(u); });
+  const grouped = new Set();
+  const blocks = [];
+  Object.values(byGroup).forEach(us=>{
+    const members = new Set(); const notes = new Set();
+    us.forEach(u=>{ u.members.forEach(x=>members.add(x)); u.notes.forEach(n=>notes.add(n)); });
+    if(members.size >= 3){ us.forEach(u=>grouped.add(u)); blocks.push({members: [...members].sort(), notes: [...notes].sort()}); }
+  });
+  Object.values(units).forEach(u=>{
+    if(grouped.has(u)) return;
+    let ids = [...u.members].sort();
+    if(labs.length > 1){ const led = entries.find(({h, b})=>b.label==='誘導馬の縁' && [h.id, b.to].sort().join('|')===u.pk); if(led) ids = [led.h.id, led.b.to]; }
+    blocks.push({members: ids, notes: [...u.notes].sort()});
+  });
+  blocks.sort((x,y)=>String(x.notes[0]||'').localeCompare(String(y.notes[0]||'')) || x.members[0].localeCompare(y.members[0]));
   const st = bondPairs(key);
   app.innerHTML = `<div class="silkband"><div class="t">★ 絆：${esc(key)} ★</div><div class="s">${BOND_ICON[key]||'💞'} この絆のペア：${st.pairs}組・${st.horses}頭</div></div>
-  <ul class="hlist">${blocks.map(({A, B, notes})=>`<li style="margin-bottom:14px"><div>${linkHorse(A)}<span style="color:#e88ca0">★</span>${linkHorse(B)}</div><div><span class="tbadge blue">${BOND_ICON[key]||'💞'} ${esc(key)}</span></div>${notes.length?`<div class="small">${notes.map(esc).join('<br>')}</div>`:''}</li>`).join('')}</ul>
+  <ul class="hlist">${blocks.map(({members, notes})=> members.length >= 3
+    ? `<li style="margin-bottom:14px">${members.map(id=>`<div><span style="color:#e88ca0">★</span>${linkHorse(byId[id])}</div>`).join('')}<div><span class="tbadge blue">${BOND_ICON[key]||'💞'} ${esc(key)}</span></div>${notes.length?`<div class="small">${notes.map(esc).join('<br>')}</div>`:''}</li>`
+    : `<li style="margin-bottom:14px"><div>${linkHorse(byId[members[0]])}<span style="color:#e88ca0">★</span>${linkHorse(byId[members[1]])}</div><div><span class="tbadge blue">${BOND_ICON[key]||'💞'} ${esc(key)}</span></div>${notes.length?`<div class="small">${notes.map(esc).join('<br>')}</div>`:''}</li>`).join('')}</ul>
   <p class="small">絆バッジを押すと、その絆のペア一覧へ飛べます。<a href="#/bonds">絆の一覧</a></p>`;
 }
 function bondsPage(){
